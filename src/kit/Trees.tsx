@@ -134,6 +134,8 @@ function leafTexture() {
   const t = new THREE.CanvasTexture(c)
   t.colorSpace = THREE.SRGBColorSpace
   t.anisotropy = 4
+  // repeats across the leafy cores of crowns and bushes (the cards use it once)
+  t.wrapS = t.wrapT = THREE.RepeatWrapping
   leafTex = upgradeTexture(t, 'leaf-albedo.webp')
   return t
 }
@@ -171,7 +173,7 @@ function needleTexture() {
 
 /** Leaf cards over a crown's surface, facing outward, so the silhouette breaks into foliage.
  *  Normals lean out from the surface for soft, rounded light; colours keep the crown's shading. */
-function leafCards(base: THREE.BufferGeometry, count: number, size: number, seed: number) {
+function leafCards(base: THREE.BufferGeometry, count: number, size: number, seed: number, scatter = 0) {
   const rand = seededRand(seed)
   const g = base.index ? base.toNonIndexed() : base
   const p = g.attributes.position as THREE.BufferAttribute
@@ -237,10 +239,15 @@ function leafCards(base: THREE.BufferGeometry, count: number, size: number, seed
     T.normalize().applyAxisAngle(N, rand() * Math.PI * 2)
     B.copy(N).cross(T)
     const s = size * (0.75 + rand() * 0.5)
-    const k = c ? c.getX(t * 3) : 1
+    // the crown's shading, deepened underneath: leaves on the underside sit in shade
+    const k0 = c ? c.getX(t * 3) : 1
+    const k = k0 * (0.55 + 0.45 * Math.min(1, k0 / 0.75))
     const flip = rand() < 0.5
+    // some cards sit in the crown's surface, some stand well out of it: no clean ball outline
+    // (scatter, in the crown's own units, throws some much further out, breaking the rim)
+    const lift = s * 0.04 + rand() * (s * 0.34 + scatter)
     corners.forEach(([x, y], j) => {
-      q.copy(P).addScaledVector(N, s * 0.12).addScaledVector(T, x * s).addScaledVector(B, y * s)
+      q.copy(P).addScaledVector(N, lift).addScaledVector(T, x * s).addScaledVector(B, y * s)
       pos.set([q.x, q.y, q.z], (i * 6 + j) * 3)
       const n = N.clone().addScaledVector(T, x * 0.8).addScaledVector(B, y * 0.8).normalize()
       nor.set([n.x, n.y, n.z], (i * 6 + j) * 3)
@@ -260,12 +267,40 @@ let leafNrm: THREE.Texture | null = null
 let needleNrm: THREE.Texture | null = null
 function leafMaterial() {
   leafNrm ??= flatNormal('leaf-normal.webp')
-  return new THREE.MeshStandardMaterial({ map: leafTexture(), normalMap: leafNrm, normalScale: new THREE.Vector2(0.8, 0.8), alphaTest: 0.5, side: THREE.DoubleSide, vertexColors: true, roughness: 0.75 })
+  const m = new THREE.MeshStandardMaterial({ map: leafTexture(), normalMap: leafNrm, normalScale: new THREE.Vector2(0.8, 0.8), alphaTest: 0.5, side: THREE.DoubleSide, vertexColors: true, roughness: 0.75 })
+  // cut-out leaves thin away as the texture shrinks into its smaller mipmaps (the crowns go vague
+  // at a distance): raise the coverage with the mip level, so a crown stays as full as up close
+  patch(m, 'leaf-coverage', (s) => {
+    s.fragmentShader = s.fragmentShader.replace(
+      '#include <alphatest_fragment>',
+      `#ifdef USE_MAP
+        vec2 texel = vMapUv * vec2(textureSize(map, 0));
+        float lod = 0.5 * log2(max(dot(dFdx(texel), dFdx(texel)), dot(dFdy(texel), dFdy(texel))));
+        diffuseColor.a *= 1.0 + max(lod, 0.0) * 0.3;
+      #endif
+      #include <alphatest_fragment>`,
+    )
+  })
+  return m
+}
+
+// Wind sway for a single (non-instanced) mesh: a gentle bend by height.
+/** Chain a shader patch onto a material (sway, leaf coverage, leafy core), giving each
+ *  combination of patches its own compiled program. */
+function patch(mat: THREE.Material, key: string, fn: (s: THREE.WebGLProgramParametersWithUniforms) => void) {
+  const prev = mat.onBeforeCompile
+  mat.onBeforeCompile = (s, r) => {
+    prev.call(mat, s, r)
+    fn(s)
+  }
+  const k = `${mat.userData.patchKey ?? mat.type}|${key}`
+  mat.userData.patchKey = k
+  mat.customProgramCacheKey = () => k
 }
 
 // Wind sway for a single (non-instanced) mesh: a gentle bend by height.
 function addSwayStatic(mat: THREE.MeshStandardMaterial, amount: number) {
-  mat.onBeforeCompile = (shader) => {
+  patch(mat, `sway-static-${amount}`, (shader) => {
     shader.uniforms.uTime = uTime
     shader.vertexShader = shader.vertexShader
       .replace('#include <common>', '#include <common>\nuniform float uTime;')
@@ -275,12 +310,12 @@ function addSwayStatic(mat: THREE.MeshStandardMaterial, amount: number) {
         float ph = uTime * 0.9 + position.x * 0.05;
         transformed.x += sin(ph) * position.y * ${amount.toFixed(4)};`,
       )
-  }
+  })
 }
 
 // Wind sway: bend the vertex by height, phase from the instance position.
 function addSway(mat: THREE.MeshStandardMaterial, amount: number) {
-  mat.onBeforeCompile = (shader) => {
+  patch(mat, `sway-${amount}`, (shader) => {
     shader.uniforms.uTime = uTime
     shader.vertexShader = shader.vertexShader
       .replace('#include <common>', '#include <common>\nuniform float uTime;')
@@ -293,7 +328,91 @@ function addSway(mat: THREE.MeshStandardMaterial, amount: number) {
         transformed.x += sin(ph) * bend + sin(ph * 2.7) * bend * 0.3;
         transformed.z += cos(ph * 0.8) * bend * 0.6;`,
       )
+  })
+}
+
+/** The inside of a bush or crown: deep leaves in shade. The leaf render is mapped onto it from
+ *  three sides and it takes little direct sun, so where the outer leaves part one sees more
+ *  leaves further in, never the smooth surface of a ball. */
+function coreMaterial(color: THREE.ColorRepresentation) {
+  const m = new THREE.MeshStandardMaterial({ color, roughness: 0.95, vertexColors: true })
+  const tex = leafTexture()
+  patch(m, 'core', (s) => {
+    s.uniforms.uLeaf = { value: tex }
+    s.vertexShader = s.vertexShader
+      .replace('#include <common>', '#include <common>\nvarying vec3 vCoreP;\nvarying vec3 vCoreN;')
+      .replace('#include <begin_vertex>', '#include <begin_vertex>\nvCoreP = position * 2.6;\nvCoreN = normal;')
+    s.fragmentShader = s.fragmentShader
+      .replace('#include <common>', '#include <common>\nuniform sampler2D uLeaf;\nvarying vec3 vCoreP;\nvarying vec3 vCoreN;')
+      .replace(
+        '#include <map_fragment>',
+        `#include <map_fragment>
+        vec3 bw = pow(abs(normalize(vCoreN)), vec3(4.0));
+        bw /= bw.x + bw.y + bw.z;
+        vec3 lf = texture2D(uLeaf, vCoreP.yz).rgb * bw.x + texture2D(uLeaf, vCoreP.xz).rgb * bw.y + texture2D(uLeaf, vCoreP.xy).rgb * bw.z;
+        diffuseColor.rgb *= lf * 1.15;`,
+      )
+      .replace('#include <lights_fragment_end>', '#include <lights_fragment_end>\nreflectedLight.directDiffuse *= 0.45;\nreflectedLight.directSpecular *= 0.0;')
+  })
+  return m
+}
+
+let barkTex: THREE.Texture | null = null
+/** Bark (tools/blender/bark.py: furrowed plates, lichen) mapped by world position from three
+ *  sides, so it keeps its scale on every trunk, root and limb however each is stretched. */
+function barkMaterial(color: THREE.ColorRepresentation) {
+  if (!barkTex) {
+    barkTex = solidTexture('#7d6f62', 'bark-albedo.webp')
+    if (barkTex) barkTex.wrapS = barkTex.wrapT = THREE.RepeatWrapping
   }
+  const m = new THREE.MeshStandardMaterial({ color, roughness: 1 })
+  const tex = barkTex
+  patch(m, 'bark', (s) => {
+    s.uniforms.uBark = { value: tex }
+    s.vertexShader = s.vertexShader
+      .replace('#include <common>', '#include <common>\nvarying vec3 vBarkP;\nvarying vec3 vBarkN;')
+      .replace(
+        '#include <project_vertex>',
+        `vec4 bp = vec4(transformed, 1.0);
+        vec3 bn = objectNormal;
+        #ifdef USE_INSTANCING
+          bp = instanceMatrix * bp;
+          bn = mat3(instanceMatrix) * bn;
+        #endif
+        vBarkP = (modelMatrix * bp).xyz;
+        vBarkN = mat3(modelMatrix) * bn;
+        #include <project_vertex>`,
+      )
+    s.fragmentShader = s.fragmentShader
+      .replace('#include <common>', '#include <common>\nuniform sampler2D uBark;\nvarying vec3 vBarkP;\nvarying vec3 vBarkN;')
+      .replace(
+        '#include <map_fragment>',
+        `#include <map_fragment>
+        vec3 bw = pow(abs(normalize(vBarkN)), vec3(4.0));
+        bw /= bw.x + bw.y + bw.z;
+        // a tile is ~0.5 m round and 1 m up the trunk
+        vec3 bk = texture2D(uBark, vec2(vBarkP.z * 2.0, vBarkP.y)).rgb * bw.x
+          + texture2D(uBark, vec2(vBarkP.x * 2.0, vBarkP.z * 2.0)).rgb * bw.y
+          + texture2D(uBark, vec2(vBarkP.x * 2.0, vBarkP.y)).rgb * bw.z;
+        diffuseColor.rgb *= bk * 1.4;`,
+      )
+  })
+  return m
+}
+
+/** Shape a cylinder (radius 1, height 1, base at y = 0) vertex by vertex: f(angle, t 0..1 up)
+ *  returns [radius, dx, dz]. */
+function shapeCylinder(g: THREE.BufferGeometry, f: (a: number, t: number) => [number, number, number]) {
+  const p = g.attributes.position
+  for (let i = 0; i < p.count; i++) {
+    const x = p.getX(i)
+    const z = p.getZ(i)
+    const t = p.getY(i)
+    const [r, dx, dz] = f(Math.atan2(z, x), t)
+    p.setXYZ(i, x * r + dx, t, z * r + dz)
+  }
+  g.computeVertexNormals()
+  return g
 }
 
 /** Casuarinas: a tall slim trunk and wispy, drooping plumes of grey-green needles, loosely
@@ -325,7 +444,7 @@ export function casuarinaMeshes(trees: TreePlacement[]) {
       }
     }
     const foliageGeo = mergeGeometries(plumes)!
-    const trunkMat = new THREE.MeshStandardMaterial({ color: '#4e3d30', roughness: 1 })
+    const trunkMat = barkMaterial('#6a5646')
     needleNrm ??= flatNormal('needle-normal.webp')
     const foliageMat = new THREE.MeshStandardMaterial({ map: needleTexture(), normalMap: needleNrm, normalScale: new THREE.Vector2(0.6, 0.6), alphaTest: 0.4, color: '#ffffff', roughness: 0.95, side: THREE.DoubleSide })
     addSway(trunkMat, 0.004)
@@ -444,11 +563,11 @@ export function broadleafMeshes(trees: Broadleaf[], low: boolean) {
     void low // crowns are light enough at one detail level for every quality setting
     const trunkGeo = forkedTrunk(3, 2)
     const crownGeo = clumpCrown(3, 8, 1)
-    const leafGeo = leafCards(crownGeo, 1200, 0.26, 5)
+    const leafGeo = leafCards(crownGeo, 1700, 0.22, 5, 0.14)
     // the crown's mass is the shadowed inside of the tree; the leaf cards make its surface
     crownGeo.scale(0.9, 0.9, 0.9)
-    const trunkMat = new THREE.MeshStandardMaterial({ color: '#3f3125', roughness: 1 })
-    const crownMat = new THREE.MeshStandardMaterial({ color: '#6a6a6a', roughness: 0.9, vertexColors: true })
+    const trunkMat = barkMaterial('#5a4636')
+    const crownMat = coreMaterial('#8c8c8c')
     const leafMat = leafMaterial()
     addSway(crownMat, 0.012)
     addSway(leafMat, 0.012)
@@ -496,41 +615,70 @@ export interface Banyan {
 export function banyanMeshes(b: Banyan) {
   const rand = seededRand(41)
   const wood: THREE.BufferGeometry[] = []
-  const trunk = new THREE.CylinderGeometry(b.r * 0.08, b.r * 0.13, b.h * 0.55, 9)
-  trunk.translate(b.x, (b.h * 0.55) / 2, b.z)
+  // the trunk: fluted, many old roots fused together, flaring at the foot
+  const th = b.h * 0.55
+  const trunk = shapeCylinder(new THREE.CylinderGeometry(1, 1, 1, 28, 14).translate(0, 0.5, 0), (a, t) => {
+    const r = b.r * (0.13 - 0.05 * t) * (1 + 0.16 * Math.sin(a * 7 + t * 2.5) + 0.06 * Math.sin(a * 13 - t * 4)) * (1 + 0.7 * Math.exp((-t * th) / 0.9))
+    return [r, 0, 0]
+  })
+  trunk.scale(1, th, 1)
+  trunk.translate(b.x, 0, b.z)
   wood.push(trunk)
-  // aerial roots dropped from the branches, thickened where they reached the ground
+  // aerial roots dropped from the branches: knotted, wandering a little, thickened and flared
+  // where they reached the ground, some in twos and threes twisted together
+  const root = (x: number, z: number, top: number, r0: number, r1: number, seed: number) => {
+    const g = shapeCylinder(new THREE.CylinderGeometry(1, 1, 1, 8, 16, true).translate(0, 0.5, 0), (a, t) => {
+      const h = t * top
+      const r = (r1 + (r0 - r1) * t) * (1 + 0.16 * Math.sin(t * 29 + seed) * Math.sin(a * 3 + seed)) * (1 + 1.6 * Math.exp(-h / 0.3))
+      return [r, Math.sin(t * 4.3 + seed) * 0.09 * (1 - t), Math.cos(t * 3.7 + seed * 2) * 0.09 * (1 - t)]
+    })
+    g.scale(1, top, 1)
+    g.translate(x, 0, z)
+    wood.push(g)
+  }
   for (let k = 0; k < 26; k++) {
     const a = rand() * Math.PI * 2
     const d = b.r * (0.25 + rand() * 0.6)
     const top = b.h * (0.5 + rand() * 0.1)
-    const g = new THREE.CylinderGeometry(0.06 + rand() * 0.08, 0.1 + rand() * 0.14, top, 5)
-    g.translate(b.x + Math.cos(a) * d, top / 2, b.z + Math.sin(a) * d)
-    wood.push(g)
+    const x = b.x + Math.cos(a) * d
+    const z = b.z + Math.sin(a) * d
+    const r1 = 0.1 + rand() * 0.14
+    root(x, z, top, 0.05 + rand() * 0.05, r1, k * 3.1)
+    const twins = rand() < 0.5 ? 1 + Math.floor(rand() * 2) : 0
+    for (let j = 0; j < twins; j++) {
+      const o = rand() * Math.PI * 2
+      root(x + Math.cos(o) * r1 * 1.3, z + Math.sin(o) * r1 * 1.3, top * (0.96 + rand() * 0.04), 0.03, r1 * 0.55, k * 3.1 + j + 1.7)
+    }
   }
   // great limbs out to the canopy edge
   for (let k = 0; k < 7; k++) {
     const a = (k / 7) * Math.PI * 2 + rand() * 0.4
     const len = b.r * (0.6 + rand() * 0.3)
-    const g = new THREE.CylinderGeometry(0.12, 0.3, len, 6)
-    g.translate(0, len / 2, 0)
+    // tapering, bending up toward its end, knotted where side branches left it
+    const sd = k * 1.9
+    const g = shapeCylinder(new THREE.CylinderGeometry(1, 1, 1, 10, 14).translate(0, 0.5, 0), (an, t) => {
+      const r = (0.3 - 0.2 * t) * (1 + 0.12 * Math.sin(t * 17 + sd) * Math.sin(an * 2 + sd))
+      return [r, -Math.sin(t * Math.PI * 0.8) * 0.35 + Math.sin(t * 6 + sd) * 0.08, Math.sin(t * 5 + sd) * 0.12]
+    })
+    g.scale(1, len, 1)
     g.rotateZ(1.25)
     g.rotateY(a)
     g.translate(b.x, b.h * 0.5, b.z)
     wood.push(g)
   }
   const woodGeo = mergeGeometries(wood.map((g) => (g.index ? g.toNonIndexed() : g)))!
-  const crownGeo = clumpCrown(12, 22, 1.6)
+  const crownGeo = clumpCrown(12, 38, 1.6)
   crownGeo.scale(b.r * 0.72, b.h * 0.32, b.r * 0.72)
   crownGeo.translate(b.x, b.h * 0.72, b.z)
-  const leafGeo = leafCards(crownGeo, 5200, 1.1, 23)
+  const leafGeo = leafCards(crownGeo, 11000, 0.8, 23, 1.4)
   const green = new THREE.Color().setHSL(0.27, 0.36, 0.13)
-  const crownMat = new THREE.MeshStandardMaterial({ color: green.clone().multiplyScalar(0.65), roughness: 0.9, vertexColors: true })
+  const crownMat = coreMaterial(green.clone().multiplyScalar(0.85))
   const leafMat = leafMaterial()
   leafMat.color.copy(green)
   addSwayStatic(crownMat, 0.004)
   addSwayStatic(leafMat, 0.004)
-  const w = new THREE.Mesh(woodGeo, new THREE.MeshStandardMaterial({ color: '#5a4a3c', roughness: 1 }))
+  // banyan bark is pale grey
+  const w = new THREE.Mesh(woodGeo, barkMaterial('#a39888'))
   const c = new THREE.Mesh(crownGeo, crownMat)
   const l = new THREE.Mesh(leafGeo, leafMat)
   for (const m of [w, c, l]) {
@@ -596,12 +744,13 @@ export function shrubMesh(shrubs: Shrub[]) {
 /** Shrubs as a dark body under a skin of leaf cards (the body alone is what the bake sees). */
 export function shrubMeshes(shrubs: Shrub[]) {
     const geo = crownGeometry(1, 3)
-    geo.translate(0, 0.75, 0)
-    const leafGeo = leafCards(geo, 700, 0.3, 9)
+    // a clipped mound, settled into the lawn rather than a ball resting on it
+    geo.translate(0, 0.6, 0)
+    const leafGeo = leafCards(geo, 900, 0.26, 9, 0.06)
     geo.scale(0.9, 0.9, 0.9)
     geo.translate(0, 0.07, 0)
     // the body is the deep shade inside the bush, seen only through gaps in the leaves
-    const mat = new THREE.MeshStandardMaterial({ color: '#727272', roughness: 0.85, vertexColors: true })
+    const mat = coreMaterial('#909090')
     const m = new THREE.InstancedMesh(geo, mat, shrubs.length)
     const l = new THREE.InstancedMesh(leafGeo, leafMaterial(), shrubs.length)
     const o = new THREE.Object3D()

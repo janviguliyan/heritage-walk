@@ -173,6 +173,16 @@ corrections). Site text overlays: `src/sites/konark/content.<lang>.json`. Needs 
    tufts stand on every lawn (`kit/Grass.tsx`: crossed cards lit by the lawn's own bake at the
    root, swaying, shrinking away past 30 m; high quality only). Light re-baked in Cycles for the
    new trees (128 samples; the previous bake is in `tools/blender/out/bake-before-foliage/`).
+   Round 3 (after review: crowns read as balls and discs, bushes as pasted on, trees vague):
+   the solid core of every crown and bush carries the leaf render mapped from three sides and
+   takes little sun (`coreMaterial`), so gaps show deeper leaves, not a smooth ball; leaf cards
+   stand out from the crown at varied depths (`leafCards` scatter) and the banyan canopy is 38
+   smaller masses, so no clean round rim is left; cut-out leaves keep their coverage as the
+   texture shrinks into small mipmaps (`leaf-coverage`), so distant crowns stay full; bushes
+   settle into the lawn as mounds with shaded undersides; bark (`tools/blender/bark.py`) mapped
+   by world position on every trunk (`barkMaterial`); the banyan's trunk is fluted and flared,
+   its hanging roots knotted, wandering and flared at the ground (some in twos and threes),
+   its limbs tapered and bent. Shader patches chain through `patch()` in `kit/Trees.tsx`.
    Review any spot with `?stop=1&view=x,z,lookX,lookY,lookZ`.
    Next: Narasimha, the dance hall, distant views.
 6. Phone layout for everything.

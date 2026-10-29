@@ -181,4 +181,5 @@ All from the official npm registry, versions pinned in `package.json`.
 
 Leaf clusters, casuarina needles, coconut fronds, grass tufts and the lawn are modelled
 procedurally and rendered in Blender (Cycles) by `tools/blender/foliage.py`, then converted with
-`tools/blender/foliage_post.py` and cwebp. No photographs or downloaded assets.
+`tools/blender/foliage_post.py` and cwebp. Bark is a tileable noise field from
+`tools/blender/bark.py`. No photographs or downloaded assets.
