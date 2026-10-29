@@ -51,6 +51,8 @@ export function upgradeTexture<T extends THREE.Texture | null>(tex: T, file: str
   new THREE.ImageLoader()
     .loadAsync(`${import.meta.env.BASE_URL}foliage/${file}`)
     .then((img) => {
+      // a texture already on the GPU has fixed storage at the stand-in's size: free it first
+      tex.dispose()
       tex.image = img
       tex.needsUpdate = true
     })
@@ -446,13 +448,16 @@ export function casuarinaMeshes(trees: TreePlacement[]) {
     const foliageGeo = mergeGeometries(plumes)!
     const trunkMat = barkMaterial('#6a5646')
     needleNrm ??= flatNormal('needle-normal.webp')
-    const foliageMat = new THREE.MeshStandardMaterial({ map: needleTexture(), normalMap: needleNrm, normalScale: new THREE.Vector2(0.6, 0.6), alphaTest: 0.4, color: '#ffffff', roughness: 0.95, side: THREE.DoubleSide })
+    // casuarina needles are a dull grey-green. (The colour sits on the material: these cards have no
+    // vertex colours, and without them the per-instance tint never reached the fragment, leaving
+    // the near-white needle texture untinted.)
+    needleNrm ??= flatNormal('needle-normal.webp')
+    const foliageMat = new THREE.MeshStandardMaterial({ map: needleTexture(), normalMap: needleNrm, normalScale: new THREE.Vector2(0.6, 0.6), alphaTest: 0.4, color: '#3a4430', roughness: 0.95, side: THREE.DoubleSide })
     addSway(trunkMat, 0.004)
     addSway(foliageMat, 0.6)
     const t = new THREE.InstancedMesh(trunkGeo, trunkMat, trees.length)
     const f = new THREE.InstancedMesh(foliageGeo, foliageMat, trees.length)
     const o = new THREE.Object3D()
-    const col = new THREE.Color()
     trees.forEach((tr, i) => {
       o.position.set(tr.x, 0, tr.z)
       o.rotation.set(0, (tr.x * 13.1 + tr.z * 7.7) % (Math.PI * 2), 0)
@@ -462,9 +467,6 @@ export function casuarinaMeshes(trees: TreePlacement[]) {
       o.scale.set(tr.h * 0.4, tr.h, tr.h * 0.4)
       o.updateMatrix()
       f.setMatrixAt(i, o.matrix)
-      // casuarina needles are a dull grey-green
-      col.setHSL(0.2 + ((i * 0.37) % 1) * 0.04, 0.2, 0.15 + ((i * 0.61) % 1) * 0.05)
-      f.setColorAt(i, col)
     })
     for (const m of [t, f]) {
       m.castShadow = true

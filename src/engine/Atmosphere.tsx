@@ -191,7 +191,8 @@ export function Atmosphere({ azimuth, stops, low }: { azimuth: number; stops: nu
     ;(dome.material as THREE.ShaderMaterial).uniforms.uHorizon.value.copy(col)
     // thin the haze when the camera is up in the sky (the map), so the whole complex reads
     const high = THREE.MathUtils.smoothstep(state.camera.position.y, 12, 120)
-    fog.density = THREE.MathUtils.lerp(0.007, 0.003, p) * (1 - 0.8 * high) * (s.bakedSun ? 0.6 : 1)
+    // a morning haze, clear enough to see the tree lines and villages a kilometre or two off
+    fog.density = THREE.MathUtils.lerp(0.0055, 0.0019, p) * (1 - 0.8 * high) * (s.bakedSun ? 0.6 : 1)
     if (glow.current) {
       glow.current.position.set(cam.x + dir.x * 900, cam.y + dir.y * 900, cam.z + dir.z * 900)
       const m = glow.current.material as THREE.SpriteMaterial

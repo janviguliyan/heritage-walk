@@ -148,7 +148,8 @@ export function getMaterials(low = false): Record<MatKey, THREE.Material> {
     sand: new THREE.MeshStandardMaterial({ ...s, roughness: 1 }),
     grass: new THREE.MeshStandardMaterial({ ...g, roughness: 1 }),
     path: new THREE.MeshStandardMaterial({ ...p, roughness: 0.95 }),
-    recess: new THREE.MeshStandardMaterial({ color: '#3a2c20', roughness: 1 }),
+    // the stone at the back of a recess: a shade darker than the wall, the bake supplies the shadow
+    recess: new THREE.MeshStandardMaterial({ color: '#6b5a49', roughness: 1 }),
     lawn: new THREE.MeshStandardMaterial({ ...lw, roughness: 1 }),
     carved: new THREE.MeshStandardMaterial({ ...cv, roughness: 0.9, normalScale: new THREE.Vector2(1.2, 1.2) }),
   }

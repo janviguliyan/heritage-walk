@@ -1,5 +1,6 @@
 import { use, useMemo } from 'react'
 import { StaticWorld } from '../../kit/StaticWorld'
+import { Horizon } from '../../kit/Horizon'
 import { BanyanTree, BroadleafTrees, Casuarinas, Palms, Shrubs } from '../../kit/Trees'
 import { banyanPlacement, broadleafPlacements, palmPlacements, shrubPlacements, treePlacements } from './build'
 import { sceneData } from './buildClient'
@@ -25,6 +26,8 @@ export function KonarkScene({ low }: { low: boolean }) {
       <Shrubs shrubs={shrubs} />
       <Palms palms={palms} />
       <BanyanTree tree={banyan} />
+      {/* the land beyond the walls, out to the sea (tools/blender/distant.py) */}
+      <Horizon base="/sites/konark/horizon/" low={low} />
     </>
   )
 }
