@@ -102,16 +102,23 @@ function horseForm(f: Sculpt, o: { pose?: 'stride' | 'rear'; head?: boolean; for
     if (o.forelegs === false) return f.limb([0.85, 1.5 + lift, z], [0.9, 1.0 + lift, z], 0.16, 0.12, 0.08)
     if (raised || rear) {
       const pts: V[] = [[0.85, 1.55 + lift, z], [1.1, 1.25 + lift, z], [1.2, 1.55 + lift, z], [1.3, 1.25 + lift, z]]
-      f.chain(pts, [0.17, 0.1, 0.08, 0.075], 0.06)
+      f.chain(pts, [0.2, 0.125, 0.1, 0.088], 0.07)
+      f.sphere([1.1, 1.25 + lift, z], 0.11, 0.04)
       f.ellipsoid([1.33, 1.18 + lift, z], [0.09, 0.07, 0.08], [0, 0, 0.8], 0.03)
     } else {
-      f.chain([[0.82, 1.45, z], [0.86, 0.95, z], [0.86, 0.5, z], [0.88, 0.14, z]], [0.17, 0.095, 0.075, 0.07], 0.06)
-      f.ellipsoid([0.9, 0.08, z], [0.11, 0.08, 0.1], [0, 0, 0], 0.03)
+      f.chain([[0.82, 1.45, z], [0.86, 0.95, z], [0.86, 0.5, z], [0.88, 0.14, z]], [0.2, 0.12, 0.095, 0.088], 0.07)
+      // knee and fetlock joints, and a hoof with its rim
+      f.ellipsoid([0.87, 0.92, z], [0.11, 0.12, 0.1], [0, 0, 0], 0.04)
+      f.sphere([0.88, 0.24, z], 0.1, 0.04)
+      f.ellipsoid([0.92, 0.08, z], [0.13, 0.09, 0.12], [0, 0, 0], 0.03)
     }
   }
   const hindleg = (z: number) => {
-    f.chain([[-0.85, 1.55, z], [-0.68, 1.05, z], [-0.95, 0.68, z], [-0.92, 0.14, z]], [0.22, 0.13, 0.08, 0.07], 0.07)
-    f.ellipsoid([-0.91, 0.08, z], [0.11, 0.08, 0.1], [0, 0, 0], 0.03)
+    f.chain([[-0.85, 1.55, z], [-0.68, 1.05, z], [-0.95, 0.68, z], [-0.92, 0.14, z]], [0.26, 0.15, 0.1, 0.088], 0.08)
+    // the hock, the fetlock, the hoof
+    f.ellipsoid([-0.95, 0.7, z], [0.13, 0.11, 0.1], [0, 0, 0], 0.04)
+    f.sphere([-0.92, 0.24, z], 0.1, 0.04)
+    f.ellipsoid([-0.89, 0.08, z], [0.13, 0.09, 0.12], [0, 0, 0], 0.03)
   }
   foreleg(0.24, true)
   foreleg(-0.24, false)
@@ -222,36 +229,64 @@ export function warElephantStatue() {
   })
 }
 
-/** A lion, rampant (as on the stairs and the roof), facing +X. */
+/** A lion, rampant (as on the stairs and the roof), facing +X: the Odishan lion, deep-chested and
+ *  thick-limbed, its mane worked in rings of snail curls, jaws open. */
 function lionForm(f: Sculpt, s = 1) {
   const p = (q: V): V => [q[0] * s, q[1] * s, q[2] * s]
-  f.limb(p([-0.45, 0.85, 0]), p([0.25, 1.55, 0]), 0.36 * s, 0.42 * s, 0.15 * s)
-  f.ellipsoid(p([-0.5, 0.75, 0]), [0.42 * s, 0.4 * s, 0.38 * s], [0, 0, 0], 0.12 * s)
-  // head and the great curled mane
-  f.sphere(p([0.42, 1.95, 0]), 0.36 * s, 0.1 * s)
-  for (let i = 0; i < 14; i++) {
-    const a = (i / 14) * Math.PI * 2
-    f.sphere(p([0.25, 1.95 + Math.sin(a) * 0.42, Math.cos(a) * 0.42]), 0.13 * s, 0.05 * s)
-  }
-  f.ellipsoid(p([0.72, 1.85, 0]), [0.2 * s, 0.17 * s, 0.2 * s], [0, 0, -0.2], 0.06 * s)
-  f.sphere(p([0.88, 1.74, 0]), 0.1 * s).cut(0.04 * s)
+  const k = (v: number) => v * s
+  // body: haunch, belly rising to a deep chest
+  f.limb(p([-0.45, 0.85, 0]), p([0.22, 1.5, 0]), k(0.36), k(0.44), k(0.15))
+  f.ellipsoid(p([-0.5, 0.78, 0]), [k(0.44), k(0.42), k(0.4)], [0, 0, 0], k(0.12))
+  f.ellipsoid(p([0.2, 1.42, 0]), [k(0.3), k(0.42), k(0.38)], [0, 0, 0.5], k(0.12))
+  f.ellipsoid(p([-0.1, 1.0, 0]), [k(0.3), k(0.36), k(0.3)], [0, 0, 0.8], k(0.1))
+  // head: broad skull, heavy brow, a short square muzzle, jaws open
+  const H: V = [0.45, 1.98, 0]
+  f.sphere(p(H), k(0.32), k(0.1))
+  f.ellipsoid(p([0.62, 2.07, 0]), [k(0.12), k(0.07), k(0.26)], [0, 0, -0.3], k(0.05))
+  f.ellipsoid(p([0.74, 1.9, 0]), [k(0.18), k(0.13), k(0.17)], [0, 0, -0.15], k(0.05))
+  f.ellipsoid(p([0.7, 1.74, 0]), [k(0.15), k(0.05), k(0.13)], [0, 0, 0.25], k(0.04))
+  f.ellipsoid(p([0.86, 1.82, 0]), [k(0.1), k(0.05), k(0.11)], [0, 0, 0.3]).cut(k(0.02))
+  f.sphere(p([0.9, 1.95, 0]), k(0.06), k(0.02))
   for (const z of [-1, 1]) {
-    f.sphere(p([0.66, 2.08, 0.15 * z]), 0.06 * s).cut(0.02 * s)
-    f.sphere(p([0.5, 2.25, 0.22 * z]), 0.09 * s, 0.03 * s)
-    // forelegs raised, claws out
-    f.chain([p([0.35, 1.45, 0.25 * z]), p([0.65, 1.3, 0.32 * z]), p([0.85, 1.55, 0.3 * z])], [0.13 * s, 0.1 * s, 0.09 * s], 0.06 * s)
-    for (const dz of [-0.06, 0, 0.06]) f.limb(p([0.85, 1.58, (0.3 + dz) * z]), p([0.98, 1.66, (0.3 + dz) * z]), 0.035 * s, 0.015 * s, 0.01 * s)
-    // haunches crouched
-    f.chain([p([-0.5, 0.75, 0.28 * z]), p([-0.1, 0.45, 0.3 * z]), p([-0.35, 0.12, 0.3 * z]), p([0.0, 0.07, 0.3 * z])], [0.25 * s, 0.13 * s, 0.09 * s, 0.08 * s], 0.08 * s)
+    // bulging eyes in deep sockets, the nostrils, a fang at each corner of the mouth
+    f.sphere(p([0.68, 2.05, 0.13 * z]), k(0.065)).cut(k(0.02))
+    f.sphere(p([0.66, 2.05, 0.13 * z]), k(0.05), k(0.01))
+    f.sphere(p([0.93, 1.95, 0.04 * z]), k(0.025)).cut(k(0.008))
+    f.limb(p([0.86, 1.86, 0.08 * z]), p([0.9, 1.78, 0.08 * z]), k(0.025), k(0.008), k(0.008))
+    f.limb(p([0.82, 1.73, 0.07 * z]), p([0.86, 1.8, 0.07 * z]), k(0.022), k(0.007), k(0.008))
+    // ears, small and rounded, set high
+    f.ellipsoid(p([0.38, 2.3, 0.2 * z]), [k(0.07), k(0.1), k(0.04)], [0.4 * z, 0, 0], k(0.03))
   }
-  f.chain([p([-0.85, 0.6, 0]), p([-1.1, 0.95, 0]), p([-0.95, 1.35, 0]), p([-0.75, 1.4, 0])], [0.07 * s, 0.06 * s, 0.06 * s, 0.1 * s], 0.05 * s)
+  // the mane: two rings of snail curls round the face and a beard of curls under the jaw
+  for (const [x, r, n, cr] of [[0.42, 0.36, 15, 0.1], [0.24, 0.47, 19, 0.115], [0.08, 0.5, 19, 0.11]] as const) {
+    for (let i = 0; i < n; i++) {
+      const a = (i / n) * Math.PI * 2 + x
+      const c: V = [x, 1.98 + Math.sin(a) * r, Math.cos(a) * r]
+      f.sphere(p(c), k(cr), k(0.04))
+      f.sphere(p([c[0] + cr * 0.75, c[1], c[2]]), k(cr * 0.35)).cut(k(0.015))
+    }
+  }
+  for (let i = 0; i < 5; i++) f.sphere(p([0.55 - i * 0.04, 1.62 - i * 0.07, (i - 2) * 0.09]), k(0.08), k(0.03))
+  for (const z of [-1, 1]) {
+    // forelegs raised, thick, paws spread with claws out
+    f.chain([p([0.3, 1.45, 0.27 * z]), p([0.62, 1.28, 0.33 * z]), p([0.88, 1.52, 0.3 * z])], [k(0.17), k(0.13), k(0.11)], k(0.07))
+    f.ellipsoid(p([0.9, 1.56, 0.3 * z]), [k(0.1), k(0.07), k(0.1)], [0, 0, 0.6], k(0.03))
+    for (const dz of [-0.07, -0.023, 0.023, 0.07]) f.limb(p([0.95, 1.6, (0.3 + dz) * z]), p([1.04, 1.64, (0.3 + dz) * z]), k(0.03), k(0.01), k(0.008))
+    // haunches crouched, a heavy thigh
+    f.ellipsoid(p([-0.42, 0.72, 0.3 * z]), [k(0.34), k(0.3), k(0.12)], [0, 0, -0.5], k(0.1))
+    f.chain([p([-0.5, 0.75, 0.3 * z]), p([-0.08, 0.45, 0.32 * z]), p([-0.32, 0.12, 0.32 * z]), p([0.02, 0.07, 0.32 * z])], [k(0.27), k(0.15), k(0.11), k(0.1)], k(0.08))
+    for (const dz of [-0.05, 0, 0.05]) f.limb(p([0.05, 0.06, (0.32 + dz) * z]), p([0.14, 0.04, (0.32 + dz) * z]), k(0.03), k(0.012), k(0.008))
+  }
+  // tail sweeping up behind, ending in a tuft
+  f.chain([p([-0.85, 0.6, 0]), p([-1.12, 0.95, 0]), p([-1.0, 1.4, 0]), p([-0.78, 1.5, 0])], [k(0.08), k(0.07), k(0.06), k(0.05)], k(0.05))
+  f.sphere(p([-0.72, 1.55, 0]), k(0.12), k(0.04))
 }
 
 export function lionStatue() {
   return once('lion', () => {
     const f = new Sculpt()
     lionForm(f)
-    return f.mesh(0.045)
+    return f.mesh(0.04)
   })
 }
 
@@ -259,26 +294,47 @@ export function lionStatue() {
 export function gajaSimhaStatue() {
   return once('gajasimha', () => {
     const f = new Sculpt()
-    // the crouching elephant
-    f.ellipsoid([0, 0.75, 0], [1.25, 0.62, 0.72], [0, 0, 0], 0.2)
-    f.ellipsoid([1.2, 0.85, 0], [0.5, 0.55, 0.52], [0, 0, 0.2], 0.15)
+    // the elephant, crushed down onto its knees: a heavy body, the great head low and forward
+    f.ellipsoid([-0.1, 0.72, 0], [1.15, 0.6, 0.7], [0, 0, 0.05], 0.2)
+    f.ellipsoid([-0.85, 0.7, 0], [0.5, 0.55, 0.62], [0, 0, 0], 0.15)
+    f.sphere([1.15, 0.92, 0], 0.55, 0.2)
     for (const z of [-1, 1]) {
-      f.ellipsoid([0.95, 0.9, 0.5 * z], [0.3, 0.42, 0.06], [0, -0.4 * z, 0], 0.06)
-      f.chain([[1.45, 0.55, 0.18 * z], [1.75, 0.35, 0.22 * z]], [0.06, 0.03], 0.02)
-      f.limb([0.8, 0.5, 0.4 * z], [1.1, 0.12, 0.45 * z], 0.24, 0.2, 0.08)
-      f.limb([-0.8, 0.5, 0.4 * z], [-1.05, 0.12, 0.42 * z], 0.26, 0.2, 0.08)
+      // the domes of the forehead, the ears pressed back, eyes, tusks
+      f.sphere([1.38, 1.22, 0.2 * z], 0.28, 0.12)
+      f.ellipsoid([0.88, 0.95, 0.58 * z], [0.38, 0.5, 0.07], [0.25 * z, -0.35 * z, 0], 0.08)
+      f.sphere([1.5, 1.0, 0.33 * z], 0.05).cut(0.02)
+      f.chain([[1.58, 0.62, 0.24 * z], [1.88, 0.42, 0.3 * z], [2.02, 0.52, 0.3 * z]], [0.075, 0.055, 0.03], 0.03)
+      // legs folded under: forelegs stretched forward on the ground, hind legs tucked
+      f.limb([0.75, 0.42, 0.45 * z], [1.25, 0.16, 0.48 * z], 0.27, 0.2, 0.1)
+      f.ellipsoid([1.3, 0.14, 0.48 * z], [0.2, 0.13, 0.2], [0, 0, 0], 0.05)
+      for (const dz of [-0.1, 0, 0.1]) f.sphere([1.48, 0.1, 0.48 * z + dz], 0.05, 0.015)
+      f.limb([-0.75, 0.45, 0.5 * z], [-0.25, 0.16, 0.52 * z], 0.3, 0.2, 0.1)
+      f.ellipsoid([-0.2, 0.14, 0.52 * z], [0.2, 0.13, 0.18], [0, 0, 0], 0.05)
     }
-    f.chain([[1.55, 0.75, 0], [1.85, 0.4, 0], [1.75, 0.1, 0.1]], [0.2, 0.13, 0.09], 0.06)
-    // the lion astride it
+    // trunk, ringed, falling between the forelegs and curling up at the tip
+    const trunk: V[] = [[1.6, 0.92, 0], [1.82, 0.58, 0], [1.88, 0.22, 0.02], [2.05, 0.1, 0.05], [2.15, 0.25, 0.06]]
+    f.chain(trunk, [0.26, 0.19, 0.14, 0.1, 0.08], 0.08)
+    for (let i = 0; i < 7; i++) {
+      const t = i / 6
+      f.torus([1.68 + t * 0.2, 0.8 - t * 0.55, 0], 0.22 - t * 0.07, 0.014, [0, 0, 0.5 - t * 0.5], 0.008)
+    }
+    // tail, and the caparison: a chain of bells at the neck and a fringed cloth over the back
+    f.chain([[-1.3, 0.85, 0], [-1.45, 0.5, 0], [-1.42, 0.25, 0]], [0.06, 0.05, 0.06], 0.04)
+    for (let i = 0; i < 9; i++) {
+      const a = -1.2 + i * 0.3
+      f.sphere([0.98, 0.95 + Math.cos(a) * 0.55 - 0.55, Math.sin(a) * 0.6], 0.05, 0.015)
+    }
+    for (const z of [-1, 1]) for (let i = 0; i < 8; i++) f.limb([-0.7 + i * 0.18, 0.62, 0.7 * z], [-0.7 + i * 0.18, 0.46, 0.68 * z], 0.035, 0.022, 0.012)
+    // the lion astride it, hind feet on the elephant's back, forepaws over its head
     const lf = new Sculpt()
-    lionForm(lf, 1.1)
+    lionForm(lf, 1.25)
     for (const p of lf.prims) {
       const d = p.d
-      p.d = (x, y, z) => d(x + 0.1, y - 1.05, z)
-      p.c = [p.c[0] - 0.1, p.c[1] + 1.05, p.c[2]]
+      p.d = (x, y, z) => d(x + 0.35, y - 1.12, z)
+      p.c = [p.c[0] - 0.35, p.c[1] + 1.12, p.c[2]]
       f.prims.push(p)
     }
-    return f.mesh(0.044)
+    return f.mesh(0.04)
   })
 }
 

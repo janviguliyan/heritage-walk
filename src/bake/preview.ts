@@ -49,6 +49,18 @@ export function runPreview() {
     add('relief', () => reliefFigure('drum', 2.45), 15)
     cam.position.set(1, 4, 25)
     cam.lookAt(1, 1.8, 0)
+  } else if (which === 'guards') {
+    // the horse and the gaja-simha, side on and three-quarter
+    const two = (name: string, make: () => THREE.BufferGeometry, y: number) => {
+      add(name, make, -2.4, y)
+      add(name, make, 2.4, y)
+      scene.children[scene.children.length - 2].rotation.y = 0
+      scene.children[scene.children.length - 1].rotation.y = -2.1
+    }
+    two('horse', () => horseStatue('whole'), 4.4)
+    two('gajasimha', () => gajaSimhaStatue(), -0.6)
+    cam.position.set(0, 3.4, 19)
+    cam.lookAt(0, 3.0, 0)
   } else if (which === 'closeup') {
     add('horse', () => horseStatue('whole'), 0)
     add('fig', () => figureStatue('mirror'), 2.6, 0.9)

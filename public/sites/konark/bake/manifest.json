@@ -1,5 +1,5 @@
 {
- "version": 1793099614870,
+ "version": 1793288527882,
  "pages": 8,
  "scale": 3,
  "sun": {
@@ -42,5 +42,5 @@
   "recess#6",
   "recess#7"
  ],
- "baker": "cycles 5.2.3 LTS, 192 samples"
+ "baker": "cycles 5.2.3 LTS, 128 samples"
 }

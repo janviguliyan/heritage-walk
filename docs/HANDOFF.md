@@ -157,7 +157,12 @@ corrections). Site text overlays: `src/sites/konark/content.<lang>.json`. Needs 
    softer chisel cuts and the sea and river names moved off the border and off each other; no
    letter-spacing on Hindi/Odia text. Production preview: `.claude/launch.json` "konark-prod"
    (`npm run build` first) on :5299.
-5. **Photoreal pass** on the whole visible site (next): trees, grass, horses, gaja-simha and
-   Narasimha, the dance hall, distant views.
+5. **Photoreal pass** on the whole visible site, in rounds. Round 1: the gaja-simha re-sculpted
+   (a kneeling elephant with a real head, domed brow, ears, tusks and a ringed trunk; a heavier
+   lion with snail-curl mane rings, open jaws and fangs, used on the roof lions too) and the
+   horses' legs made stockier with knees, hocks and hooves (`kit/statues.ts`; review at
+   `/?sculpt=guards`). Sculpture light re-baked per vertex only (`bake_light.py --pages`, the
+   lightmap pages were not re-baked; old vertex bake in `tools/blender/out/bake-before-statues/`).
+   Next: trees, grass, Narasimha, the dance hall, distant views.
 6. Phone layout for everything.
 7. Other sites (Red Fort, Taj Mahal, Hampi, …) — currently names on the map only.
