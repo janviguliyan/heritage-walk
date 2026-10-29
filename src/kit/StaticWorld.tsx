@@ -4,6 +4,7 @@ import { ConvexHullCollider, CuboidCollider, CylinderCollider, RigidBody } from 
 import type { Builder, ColliderSpec, V3 } from './builder'
 import { getMaterials, loadStoneDetail, patchDetail } from './materials'
 import { wheelGeometry } from './geometry'
+import { LawnTufts } from './Grass'
 import { store } from '../engine/store'
 
 interface BakeManifest {
@@ -167,6 +168,8 @@ export function StaticWorld({ build, data, low, bake, detail, onDispose }: { bui
         const ground = mat === 'sand' || mat === 'grass' || mat === 'path' || mat === 'lawn'
         return <mesh key={key} geometry={geo} material={materials[i]} castShadow={!baked && !ground} receiveShadow={!baked} />
       })}
+      {/* grass standing on the lawns, lit by the lawn's bake (high quality only) */}
+      {baked && !low && <LawnTufts meshes={meshes} pages={baked.pages} sun={baked.sun} scale={baked.scale} />}
       <RigidBody type="fixed" colliders={false}>
         {colliders.map((c, i) => {
           if (c.kind === 'box') return <CuboidCollider key={i} args={c.half} position={c.pos} rotation={[0, c.rotY, 0]} />

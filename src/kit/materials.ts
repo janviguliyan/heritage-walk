@@ -74,7 +74,7 @@ void detailUv(vec2 uv, out vec2 dUv, out vec2 gx, out vec2 gy) {
 
 // Lawns at the scale of the grounds: broad lighter and darker patches and sun-dried spots, from
 // the world position, so the tiled grass never repeats across an open lawn.
-const GROUND_GLSL = /* glsl */ `
+export const GROUND_GLSL = /* glsl */ `
 varying vec3 vWPos;
 float gHash(vec2 p) { return fract(sin(dot(p, vec2(41.3, 289.1))) * 43758.5453); }
 float gNoise(vec2 p) {
@@ -83,6 +83,15 @@ float gNoise(vec2 p) {
   return mix(mix(gHash(i), gHash(i + vec2(1, 0)), u.x), mix(gHash(i + vec2(0, 1)), gHash(i + vec2(1, 1)), u.x), u.y);
 }
 `
+
+/** The lawns' broad patches, by world position (shared with the grass tufts standing on them). */
+export const LAWN_TINT = /* glsl */ `
+      float gn1 = gNoise(vWPos.xz * 0.035);
+      float gn2 = gNoise(vWPos.xz * 0.13 + 3.1);
+      float gn3 = gNoise(vWPos.xz * 0.6 + 9.7);
+      float dry = smoothstep(0.58, 0.86, gn1 * 0.65 + gn2 * 0.35);
+      diffuseColor.rgb *= mix(0.8, 1.12, gn2 * 0.7 + gn3 * 0.3);
+      diffuseColor.rgb = mix(diffuseColor.rgb, diffuseColor.rgb * vec3(1.4, 1.2, 0.68), dry * 0.55);`
 
 /** Sculpted detail in the shader: atlas design per tile, and parallax depth (or, for lawns,
  *  variation across the grounds). */
@@ -93,13 +102,7 @@ export function patchDetail(shader: THREE.WebGLProgramParametersWithUniforms, ke
       .replace('#include <begin_vertex>', '#include <begin_vertex>\nvWPos = (modelMatrix * vec4(transformed, 1.0)).xyz;')
     shader.fragmentShader = shader.fragmentShader.replace('#include <common>', `#include <common>\n${GROUND_GLSL}`).replace(
       '#include <map_fragment>',
-      `#include <map_fragment>
-      float gn1 = gNoise(vWPos.xz * 0.035);
-      float gn2 = gNoise(vWPos.xz * 0.13 + 3.1);
-      float gn3 = gNoise(vWPos.xz * 0.6 + 9.7);
-      float dry = smoothstep(0.58, 0.86, gn1 * 0.65 + gn2 * 0.35);
-      diffuseColor.rgb *= mix(0.8, 1.12, gn2 * 0.7 + gn3 * 0.3);
-      diffuseColor.rgb = mix(diffuseColor.rgb, diffuseColor.rgb * vec3(1.4, 1.2, 0.68), dry * 0.55);`,
+      `#include <map_fragment>\n${LAWN_TINT}`,
     )
     return
   }
@@ -173,6 +176,8 @@ export function getMaterials(low = false): Record<MatKey, THREE.Material> {
 const DETAIL: [MatKey, string, number, [number, number]][] = [
   // smallest first
   ['carved', 'carved', 1, [0, 0]],
+  // the lawns: a mown lawn grown and rendered in Blender (tools/blender/foliage.py), 5 m tiles
+  ['lawn', 'lawn', 1, [0, 0]],
   // the paths' laterite flags: 3.6 m tiles, worn 3 cm deep at the joints
   ['path', 'paving', 1, [0.008, 0.008]],
   // the wall: 2 m tiles, 5 cm deep; the frieze: 4 × 1 band heights per tile, carving 0.06 deep

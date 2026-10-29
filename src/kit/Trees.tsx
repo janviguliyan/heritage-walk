@@ -44,6 +44,50 @@ function crownGeometry(detail: number, seed: number) {
   return g
 }
 
+/** Leaves, needles and grass modelled and rendered in Blender (tools/blender/foliage.py): each
+ *  replaces its drawn stand-in once loaded (the drawing shows until then). */
+export function upgradeTexture<T extends THREE.Texture | null>(tex: T, file: string): T {
+  if (!tex || typeof document === 'undefined') return tex
+  new THREE.ImageLoader()
+    .loadAsync(`${import.meta.env.BASE_URL}foliage/${file}`)
+    .then((img) => {
+      tex.image = img
+      tex.needsUpdate = true
+    })
+    .catch(() => {})
+  return tex
+}
+
+/** A plain colour, standing in for a texture that arrives later. */
+function solidTexture(color: string, file: string) {
+  if (typeof document === 'undefined') return null
+  const c = document.createElement('canvas')
+  c.width = c.height = 1
+  const g = c.getContext('2d')!
+  g.fillStyle = color
+  g.fillRect(0, 0, 1, 1)
+  const t = new THREE.Texture(c)
+  t.colorSpace = THREE.SRGBColorSpace
+  t.anisotropy = 4
+  t.needsUpdate = true
+  return upgradeTexture(t, file)
+}
+let frondTex: THREE.Texture | null = null
+let frondNrm: THREE.Texture | null = null
+
+/** A flat normal map, for a material whose normal map arrives later. */
+function flatNormal(file: string) {
+  if (typeof document === 'undefined') return null
+  const c = document.createElement('canvas')
+  c.width = c.height = 1
+  const g = c.getContext('2d')!
+  g.fillStyle = 'rgb(128,128,255)'
+  g.fillRect(0, 0, 1, 1)
+  const t = new THREE.Texture(c)
+  t.needsUpdate = true
+  return upgradeTexture(t, file)
+}
+
 /** A cluster of pointed leaves on transparency, drawn once (no photographs): near-white, so each
  *  tree's own green (its instance colour) tints it. Leaves radiate from twig tips. */
 let leafTex: THREE.Texture | null = null
@@ -90,7 +134,7 @@ function leafTexture() {
   const t = new THREE.CanvasTexture(c)
   t.colorSpace = THREE.SRGBColorSpace
   t.anisotropy = 4
-  leafTex = t
+  leafTex = upgradeTexture(t, 'leaf-albedo.webp')
   return t
 }
 
@@ -121,7 +165,7 @@ function needleTexture() {
   const t = new THREE.CanvasTexture(c)
   t.colorSpace = THREE.SRGBColorSpace
   t.anisotropy = 4
-  needleTex = t
+  needleTex = upgradeTexture(t, 'needle-albedo.webp')
   return t
 }
 
@@ -212,8 +256,11 @@ function leafCards(base: THREE.BufferGeometry, count: number, size: number, seed
   return out
 }
 
+let leafNrm: THREE.Texture | null = null
+let needleNrm: THREE.Texture | null = null
 function leafMaterial() {
-  return new THREE.MeshStandardMaterial({ map: leafTexture(), alphaTest: 0.5, side: THREE.DoubleSide, vertexColors: true, roughness: 0.75 })
+  leafNrm ??= flatNormal('leaf-normal.webp')
+  return new THREE.MeshStandardMaterial({ map: leafTexture(), normalMap: leafNrm, normalScale: new THREE.Vector2(0.8, 0.8), alphaTest: 0.5, side: THREE.DoubleSide, vertexColors: true, roughness: 0.75 })
 }
 
 // Wind sway for a single (non-instanced) mesh: a gentle bend by height.
@@ -279,7 +326,8 @@ export function casuarinaMeshes(trees: TreePlacement[]) {
     }
     const foliageGeo = mergeGeometries(plumes)!
     const trunkMat = new THREE.MeshStandardMaterial({ color: '#4e3d30', roughness: 1 })
-    const foliageMat = new THREE.MeshStandardMaterial({ map: needleTexture(), alphaTest: 0.4, color: '#ffffff', roughness: 0.95, side: THREE.DoubleSide })
+    needleNrm ??= flatNormal('needle-normal.webp')
+    const foliageMat = new THREE.MeshStandardMaterial({ map: needleTexture(), normalMap: needleNrm, normalScale: new THREE.Vector2(0.6, 0.6), alphaTest: 0.4, color: '#ffffff', roughness: 0.95, side: THREE.DoubleSide })
     addSway(trunkMat, 0.004)
     addSway(foliageMat, 0.6)
     const t = new THREE.InstancedMesh(trunkGeo, trunkMat, trees.length)
@@ -396,11 +444,11 @@ export function broadleafMeshes(trees: Broadleaf[], low: boolean) {
     void low // crowns are light enough at one detail level for every quality setting
     const trunkGeo = forkedTrunk(3, 2)
     const crownGeo = clumpCrown(3, 8, 1)
-    const leafGeo = leafCards(crownGeo, 760, 0.24, 5)
+    const leafGeo = leafCards(crownGeo, 1200, 0.26, 5)
     // the crown's mass is the shadowed inside of the tree; the leaf cards make its surface
     crownGeo.scale(0.9, 0.9, 0.9)
     const trunkMat = new THREE.MeshStandardMaterial({ color: '#3f3125', roughness: 1 })
-    const crownMat = new THREE.MeshStandardMaterial({ color: '#8a8a8a', roughness: 0.9, vertexColors: true })
+    const crownMat = new THREE.MeshStandardMaterial({ color: '#6a6a6a', roughness: 0.9, vertexColors: true })
     const leafMat = leafMaterial()
     addSway(crownMat, 0.012)
     addSway(leafMat, 0.012)
@@ -549,10 +597,11 @@ export function shrubMesh(shrubs: Shrub[]) {
 export function shrubMeshes(shrubs: Shrub[]) {
     const geo = crownGeometry(1, 3)
     geo.translate(0, 0.75, 0)
-    const leafGeo = leafCards(geo, 220, 0.32, 9)
+    const leafGeo = leafCards(geo, 700, 0.3, 9)
     geo.scale(0.9, 0.9, 0.9)
     geo.translate(0, 0.07, 0)
-    const mat = new THREE.MeshStandardMaterial({ color: '#8a8a8a', roughness: 0.85, vertexColors: true })
+    // the body is the deep shade inside the bush, seen only through gaps in the leaves
+    const mat = new THREE.MeshStandardMaterial({ color: '#727272', roughness: 0.85, vertexColors: true })
     const m = new THREE.InstancedMesh(geo, mat, shrubs.length)
     const l = new THREE.InstancedMesh(leafGeo, leafMaterial(), shrubs.length)
     const o = new THREE.Object3D()
@@ -600,29 +649,72 @@ export interface Palm {
   h: number
 }
 
-/** Coconut palms: a leaning ringed trunk and a crown of arching fronds. */
+/** Coconut palms: a slender leaning trunk ringed with old leaf scars, swelling at the foot, and a
+ *  crown of arching fronds (a frond rendered in Blender: midrib and drooping leaflets), with a
+ *  bunch of coconuts under it. Sizes are fractions of the palm's height. */
 export function palmMeshes(palms: Palm[]) {
-    const trunkGeo = new THREE.CylinderGeometry(0.11, 0.17, 1, 7, 6)
+    const trunkGeo = new THREE.CylinderGeometry(0.014, 0.02, 1, 10, 90)
     trunkGeo.translate(0, 0.5, 0)
-    // bend the trunk a little
     const tp = trunkGeo.attributes.position
-    for (let i = 0; i < tp.count; i++) tp.setX(i, tp.getX(i) + Math.pow(tp.getY(i), 2) * 0.12)
+    const tc = new Float32Array(tp.count * 3)
+    for (let i = 0; i < tp.count; i++) {
+      const y = tp.getY(i)
+      // the foot swells; every ~12 cm a ridge where a frond fell
+      const ring = Math.abs(((y * 90) % 1) - 0.5) < 0.12 ? 1.07 : 1
+      const k = (1 + Math.max(0, 0.06 - y) * 10) * ring
+      tp.setX(i, tp.getX(i) * k + Math.pow(y, 2) * 0.12)
+      tp.setZ(i, tp.getZ(i) * k)
+      const shade = ring > 1 ? 0.78 : 0.95 + 0.05 * Math.sin(y * 37)
+      tc.set([shade, shade, shade], i * 3)
+    }
+    trunkGeo.setAttribute('color', new THREE.BufferAttribute(tc, 3))
+    trunkGeo.computeVertexNormals()
+    // coconuts, and the boss the fronds spring from
+    const nuts: THREE.BufferGeometry[] = [trunkGeo.toNonIndexed()]
+    for (let k = 0; k < 6; k++) {
+      const a = (k / 6) * Math.PI * 2
+      const g = new THREE.SphereGeometry(0.012, 8, 6)
+      g.translate(0.12 + Math.cos(a) * 0.022, 0.975 - (k % 2) * 0.012, Math.sin(a) * 0.022)
+      nuts.push(g.toNonIndexed())
+    }
+    const boss = new THREE.SphereGeometry(0.026, 10, 8)
+    boss.scale(1, 1.3, 1)
+    boss.translate(0.12, 1.0, 0)
+    nuts.push(boss.toNonIndexed())
+    for (const g of nuts.slice(1)) {
+      const c = new Float32Array(g.attributes.position.count * 3).fill(0.7)
+      g.setAttribute('color', new THREE.BufferAttribute(c, 3))
+    }
+    const solid = mergeGeometries(nuts)!
     const leaves: THREE.BufferGeometry[] = []
-    for (let k = 0; k < 9; k++) {
-      const g = new THREE.PlaneGeometry(0.16, 0.55, 1, 6)
-      const p = g.attributes.position
-      for (let i = 0; i < p.count; i++) {
-        const y = p.getY(i) + 0.275
-        p.setXYZ(i, p.getX(i) * (1 - y * 1.2), y * 0.95, -y * y * 0.9)
+    // two tiers: the upper fronds rising, the older ones below arching over and drooping
+    const tiers: [number, number, number][] = [
+      [10, -0.55, 0],
+      [7, 0.05, 0.3],
+    ]
+    for (const [n, tilt, off] of tiers) {
+      for (let k = 0; k < n; k++) {
+        const len = 0.5 + ((k * 0.37) % 1) * 0.1
+        const g = new THREE.PlaneGeometry(0.15, len, 2, 10)
+        const p = g.attributes.position
+        for (let i = 0; i < p.count; i++) {
+          const y = p.getY(i) + len / 2
+          const x = p.getX(i)
+          // folded up along the midrib, arching out and down toward the tip
+          p.setXYZ(i, x, y * 0.95, -(y * y) * 1.0 + Math.abs(x) * 0.25)
+        }
+        g.computeVertexNormals()
+        g.rotateX(tilt)
+        g.rotateY(((k + off) / n) * Math.PI * 2)
+        g.translate(0.12, 1, 0)
+        leaves.push(g)
       }
-      g.rotateX(-0.5)
-      g.rotateY((k / 9) * Math.PI * 2)
-      g.translate(0.12, 1, 0)
-      leaves.push(g)
     }
     const frondGeo = mergeGeometries(leaves)!
-    const t = new THREE.InstancedMesh(trunkGeo, new THREE.MeshStandardMaterial({ color: '#7a6a55', roughness: 1 }), palms.length)
-    const fm = new THREE.MeshStandardMaterial({ color: '#4f6e2c', roughness: 0.9, side: THREE.DoubleSide })
+    const t = new THREE.InstancedMesh(solid, new THREE.MeshStandardMaterial({ color: '#8c7d68', roughness: 1, vertexColors: true }), palms.length)
+    frondTex ??= solidTexture('#5b7a2e', 'frond-albedo.webp')
+    frondNrm ??= flatNormal('frond-normal.webp')
+    const fm = new THREE.MeshStandardMaterial({ map: frondTex, normalMap: frondNrm, normalScale: new THREE.Vector2(0.7, 0.7), alphaTest: 0.5, roughness: 0.8, side: THREE.DoubleSide })
     addSway(fm, 0.05)
     const f = new THREE.InstancedMesh(frondGeo, fm, palms.length)
     const o = new THREE.Object3D()

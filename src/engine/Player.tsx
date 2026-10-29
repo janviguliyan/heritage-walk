@@ -70,7 +70,12 @@ export function Player({ site }: { site: SiteDefinition }) {
     // ?stop=N (1-based) or ?end starts at that view: handy for reviewing a stop
     const q = new URLSearchParams(location.search)
     const n = Number(q.get('stop'))
-    const v = q.has('end') ? content.end.view : n >= 1 && n <= content.hotspots.length ? content.hotspots[n - 1].view : content.start
+    // with ?stop=1&view=x,z,lookX,lookY,lookZ (any spot, for reviewing scenery)
+    const at = q.get('view')?.split(',').map(Number)
+    const v =
+      at?.length === 5 && at.every(Number.isFinite)
+        ? { position: [at[0], 0, at[1]] as [number, number, number], lookAt: [at[2], at[3], at[4]] as [number, number, number] }
+        : q.has('end') ? content.end.view : n >= 1 && n <= content.hotspots.length ? content.hotspots[n - 1].view : content.start
     const p = new THREE.Vector3(...v.position)
     const look = yawPitchTo(p.clone().setY(p.y + EYE), new THREE.Vector3(...v.lookAt))
     return { p, ...look }

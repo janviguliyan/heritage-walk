@@ -176,3 +176,9 @@ All from the official npm registry, versions pinned in `package.json`.
 ## Deliberately not used
 
 - **GSAP** was in the brief's stack, but its licence is GreenSock's own "Standard no-charge licence", not an open-source licence, so it fails the brief's open-licence rule. Camera glides use a small hand-written easing tween instead (`src/engine/Player.tsx`).
+
+## Trees and grass
+
+Leaf clusters, casuarina needles, coconut fronds, grass tufts and the lawn are modelled
+procedurally and rendered in Blender (Cycles) by `tools/blender/foliage.py`, then converted with
+`tools/blender/foliage_post.py` and cwebp. No photographs or downloaded assets.

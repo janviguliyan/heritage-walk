@@ -163,6 +163,17 @@ corrections). Site text overlays: `src/sites/konark/content.<lang>.json`. Needs 
    horses' legs made stockier with knees, hocks and hooves (`kit/statues.ts`; review at
    `/?sculpt=guards`). Sculpture light re-baked per vertex only (`bake_light.py --pages`, the
    lightmap pages were not re-baked; old vertex bake in `tools/blender/out/bake-before-statues/`).
-   Next: trees, grass, Narasimha, the dance hall, distant views.
+   Round 2, trees and grass, modelled and rendered in Blender (`tools/blender/foliage.py`, then
+   `foliage_post.py`; textures in `public/foliage/` and `tex/lawn-*`): leaf clusters (folded
+   leaves on twigs, with the occlusion between them, plus a normal map) and casuarina needles
+   replace the drawn canvases (`upgradeTexture` in `kit/Trees.tsx` swaps them in once loaded);
+   coconut palms rebuilt (a slender ringed trunk instead of a cone, two tiers of Blender fronds,
+   coconuts); shrubs and broadleaf crowns carry more leaf cards over darker cores; the lawns are
+   a 5 m tile of 250,000 blades seen from above (streamed in by `loadStoneDetail`); and 3D grass
+   tufts stand on every lawn (`kit/Grass.tsx`: crossed cards lit by the lawn's own bake at the
+   root, swaying, shrinking away past 30 m; high quality only). Light re-baked in Cycles for the
+   new trees (128 samples; the previous bake is in `tools/blender/out/bake-before-foliage/`).
+   Review any spot with `?stop=1&view=x,z,lookX,lookY,lookZ`.
+   Next: Narasimha, the dance hall, distant views.
 6. Phone layout for everything.
 7. Other sites (Red Fort, Taj Mahal, Hampi, …) — currently names on the map only.
