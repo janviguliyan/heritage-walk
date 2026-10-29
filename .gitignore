@@ -1,0 +1,13 @@
+node_modules
+dist
+.DS_Store
+# local model tooling (Python envs, raw map downloads)
+tools/.venv-*
+tools/map/src
+__pycache__
+
+# secrets
+.env.local
+tools/voice/sample.mp3
+tools/voice/samples/
+tools/blender/out/

@@ -1,0 +1,114 @@
+@import '../reel.css';
+
+.paper-reel {
+  background: #1a0f08;
+  animation: reel-in 0.9s ease both;
+}
+.paper-reel canvas {
+  position: absolute;
+  inset: 0;
+}
+@keyframes reel-in {
+  from {
+    opacity: 0;
+  }
+}
+.theatre {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  filter: drop-shadow(0 3px 6px rgba(20, 8, 2, 0.55)) drop-shadow(0 0 18px rgba(20, 8, 2, 0.35));
+}
+.theatre .th-card {
+  fill: #2c160b;
+}
+.paper-reel .reel-shade {
+  height: 30%;
+  background: linear-gradient(to top, rgba(20, 10, 4, 0.72), rgba(20, 10, 4, 0));
+}
+.paper-reel .reel-caption {
+  bottom: 10%;
+  width: min(80vw, 860px);
+  font-size: clamp(1.25rem, 2.1vw, 1.75rem);
+  font-weight: 500;
+  text-wrap: balance;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.9), 0 0 18px rgba(20, 10, 4, 0.6);
+  animation: caption-in 0.6s ease both;
+}
+/* the progress: one bar per scene, the current one filling over its length */
+.paper-reel .reel-progress span {
+  position: relative;
+  overflow: hidden;
+  width: 42px;
+}
+.paper-reel .reel-progress span.on {
+  background: rgba(255, 240, 210, 0.3);
+}
+.paper-reel .reel-progress span i {
+  position: absolute;
+  inset: 0;
+  background: var(--gold-leaf);
+  transform-origin: left;
+  animation: fill linear both;
+}
+@keyframes fill {
+  from {
+    transform: scaleX(0);
+  }
+}
+.paper-title {
+  position: absolute;
+  left: 50%;
+  top: 14%;
+  margin: 0;
+  translate: -50% 0;
+  font-family: var(--display);
+  font-weight: 600;
+  font-size: clamp(3.4rem, 8vw, 6.6rem);
+  letter-spacing: 0.06em;
+  color: var(--ivory);
+  text-shadow: 0 2px 12px rgba(30, 12, 4, 0.55);
+  opacity: 0;
+  transform: translateY(14px);
+  transition: opacity 1.4s ease, transform 1.4s cubic-bezier(0.2, 0.8, 0.2, 1);
+  pointer-events: none;
+}
+.paper-title.on {
+  opacity: 1;
+  transform: none;
+}
+.paper-reel .reel-skip {
+  bottom: auto;
+  top: 22px;
+  right: 84px;
+  min-height: 44px;
+}
+.paper-reel .reel-skip:hover {
+  background: rgba(20, 10, 4, 0.8);
+}
+@media (prefers-reduced-motion: reduce) {
+  .paper-reel,
+  .paper-reel .reel-caption,
+  .paper-reel .reel-progress span i {
+    animation: none;
+  }
+  .paper-title {
+    transition: none;
+  }
+}
+/* the rendered film: clips stacked, the current one fading in over the last */
+.film,
+.film video {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+.film video {
+  object-fit: cover;
+  opacity: 0;
+  transition: opacity 0.9s ease;
+}
+.film video.on {
+  opacity: 1;
+}

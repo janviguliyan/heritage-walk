@@ -1,0 +1,46 @@
+{
+ "version": 1793099614870,
+ "pages": 8,
+ "scale": 3,
+ "sun": {
+  "azimuth": 100,
+  "elevation": 26
+ },
+ "vertex": {
+  "carved#v": "v-carved.bin",
+  "chlorite#v": "v-chlorite.bin",
+  "khondalite#v": "v-khondalite.bin"
+ },
+ "keys": [
+  "carved#v",
+  "chlorite#6",
+  "chlorite#7",
+  "chlorite#v",
+  "frieze#4",
+  "frieze#5",
+  "frieze#6",
+  "frieze#7",
+  "khondalite#3",
+  "khondalite#4",
+  "khondalite#5",
+  "khondalite#6",
+  "khondalite#7",
+  "khondalite#v",
+  "laterite#3",
+  "laterite#4",
+  "laterite#5",
+  "laterite#6",
+  "laterite#7",
+  "lawn#0",
+  "lawn#1",
+  "lawn#2",
+  "lawn#3",
+  "lawn#6",
+  "path#4",
+  "path#6",
+  "recess#5",
+  "recess#6",
+  "recess#7"
+ ],
+ "baker": "cycles 5.2.3 LTS, 192 samples"
+}

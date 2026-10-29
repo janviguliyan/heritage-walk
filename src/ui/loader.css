@@ -1,0 +1,69 @@
+.ld {
+  position: fixed;
+  inset: 0;
+  z-index: 80;
+  background: #140c06;
+  color: var(--sand-light);
+  transition: transform 1s cubic-bezier(0.76, 0, 0.24, 1);
+}
+/* ready: the sheet lifts away */
+.ld.out {
+  transform: translateY(-100%);
+}
+.ld-label,
+.ld-status {
+  position: absolute;
+  top: clamp(20px, 4vh, 40px);
+  margin: 0;
+  font: 500 0.78rem/1.2 var(--body);
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+.ld-label {
+  left: clamp(20px, 4vw, 56px);
+}
+.ld-status {
+  right: clamp(20px, 4vw, 56px);
+  letter-spacing: 0.04em;
+  text-transform: none;
+  font-size: 0.86rem;
+}
+.ld-count {
+  position: absolute;
+  left: clamp(14px, 3.4vw, 48px);
+  bottom: clamp(18px, 5vh, 56px);
+  font: 500 clamp(7rem, 24vw, 22rem) / 0.8 var(--display);
+  font-variant-numeric: tabular-nums lining-nums;
+  letter-spacing: -0.03em;
+  color: var(--ivory);
+}
+.ld-count span {
+  font-size: 0.32em;
+  margin-left: 0.08em;
+  color: var(--gold-leaf);
+  vertical-align: top;
+}
+.ld-line {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 3px;
+  background: rgba(246, 227, 189, 0.12);
+}
+.ld-line i {
+  position: absolute;
+  inset: 0;
+  background: var(--gold-leaf);
+  transform-origin: left;
+}
+@media (prefers-reduced-motion: reduce) {
+  .ld {
+    transition: opacity 0.4s;
+  }
+  .ld.out {
+    transform: none;
+    opacity: 0;
+  }
+}

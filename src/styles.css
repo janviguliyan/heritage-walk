@@ -1,0 +1,1310 @@
+:root {
+  /* palette (see tokens.md): the stone, the parchment, and the gold */
+  --bark: #4a2810;
+  --ink-deep: #2b170a;
+  --cream: #f6e3bd;
+  --umber: #5b3d22;
+  --rust-ink: #7a3e1c;
+  --ink-warm: #3a2412;
+  --gold-leaf: #f2c862;
+  --ivory: #fff4dc;
+  --gold-light: #f6dc84;
+  --sand-light: #f1d9ae;
+  --gold-deep: #e8b04a;
+  --umber-light: #6b4a2a;
+  --ink-on-gold: #2a1404;
+  --gold: #f2b84b;
+  --gold-soft: #ffd98a;
+  --saffron: #e8894a;
+  --ink: #2a1a10;
+  --panel: rgba(34, 22, 14, 0.82);
+  --panel-solid: #22160e;
+  --text: #f6ead8;
+  --muted: #cdb89c;
+  --legend: #b0476b;
+  --tradition: #4c7d8f;
+  /* type: exactly two families — Cormorant Garamond for display, DM Sans for text.
+     Hindi and Odia text falls back to the system's own fonts for those scripts. */
+  --display: 'Cormorant Garamond', Georgia, serif;
+  --body: 'DM Sans', system-ui, sans-serif;
+  --hand: var(--body);
+  --odia: var(--body);
+  /* lotus-and-vine border, drawn inline so it needs no asset */
+  --vine: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='40' height='12' viewBox='0 0 40 12'%3E%3Cpath d='M0 6 Q10 0 20 6 T40 6' fill='none' stroke='%23f2b84b' stroke-width='1.2' opacity='.8'/%3E%3Ccircle cx='10' cy='3.2' r='1.6' fill='%23f2b84b' opacity='.8'/%3E%3Ccircle cx='30' cy='8.8' r='1.6' fill='%23f2b84b' opacity='.8'/%3E%3C/svg%3E");
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body,
+#root {
+  margin: 0;
+  height: 100%;
+  overflow: hidden;
+  background: var(--ink);
+  color: var(--text);
+  font-family: var(--body);
+  -webkit-font-smoothing: antialiased;
+}
+
+canvas {
+  display: block;
+  touch-action: none;
+}
+
+button,
+select {
+  font: inherit;
+  color: var(--text);
+  background: rgba(255, 220, 160, 0.08);
+  border: 1px solid rgba(242, 184, 75, 0.45);
+  border-radius: 999px;
+  padding: 0.45rem 0.95rem;
+  cursor: pointer;
+  transition: background 0.15s, border-color 0.15s;
+}
+/* hover darkens, it never washes a control out (buttons with their own fill keep it) */
+button:hover:not(:disabled) {
+  background-color: rgba(20, 12, 6, 0.45);
+  filter: brightness(0.9);
+}
+/* see-through hit areas over the scene or a picture stay see-through */
+.konark-hot-btn:hover,
+.wheel-pin:hover,
+.gold-btn:hover,
+.photo-frame:hover,
+.player-track .seg:hover,
+.link-quiet:hover,
+.mm-stop:hover {
+  background-color: transparent !important;
+}
+.konark-hot-btn:hover,
+.wheel-pin:hover,
+.photo-frame:hover,
+.player-track .seg:hover,
+.link-quiet:hover,
+.mm-stop:hover {
+  filter: none !important;
+}
+button:focus-visible,
+select:focus-visible {
+  outline: 2px solid var(--gold-soft);
+  outline-offset: 2px;
+}
+button:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+button.primary {
+  background: linear-gradient(180deg, #f4c260, #d9902f);
+  color: #2a1606;
+  border-color: transparent;
+  font-weight: 600;
+}
+button.primary:hover:not(:disabled) {
+  background: linear-gradient(180deg, #e0ac4c, #b8761f);
+  filter: none;
+}
+button.on {
+  background: rgba(242, 184, 75, 0.3);
+}
+
+:lang(hi) {
+  --display: 'Cormorant Garamond', Georgia, serif;
+  --body: 'DM Sans', system-ui, sans-serif;
+  --hand: var(--body);
+}
+:lang(or) {
+  --display: 'Cormorant Garamond', Georgia, serif;
+  --body: 'DM Sans', system-ui, sans-serif;
+  --hand: var(--body);
+}
+html:lang(hi) body,
+html:lang(or) body,
+[lang='hi'],
+[lang='or'] {
+  font-family: var(--body);
+}
+/* tracking pulls Devanagari and Odia letters apart (their joins and conjuncts break): the
+   spaced-capitals style of the Latin labels never applies to them */
+html:lang(hi) *,
+html:lang(or) *,
+[lang='hi'],
+[lang='or'] {
+  letter-spacing: normal !important;
+}
+
+.odia {
+  font-family: var(--odia);
+  color: var(--gold-soft);
+  margin: 0.1rem 0 0.6rem;
+}
+
+.pattern-border {
+  position: relative;
+  border: 1px solid rgba(242, 184, 75, 0.35);
+}
+.pattern-border::before,
+.pattern-border::after {
+  content: '';
+  position: absolute;
+  left: 16px;
+  right: 16px;
+  height: 12px;
+  background: var(--vine) repeat-x;
+  pointer-events: none;
+}
+.pattern-border::before {
+  top: 6px;
+}
+.pattern-border::after {
+  bottom: 6px;
+}
+
+.spinning {
+  animation: spin 6s linear infinite;
+}
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* intro: a side panel over the live aerial map */
+.intro {
+  position: fixed;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  padding: 16px;
+  pointer-events: none;
+  background: linear-gradient(90deg, rgba(30, 18, 10, 0.55), transparent 55%);
+  z-index: 20;
+}
+.intro h1 {
+  font-family: var(--display);
+  font-weight: 400;
+  font-size: clamp(2rem, 6vw, 2.8rem);
+  margin: 0.4rem 0 0;
+  color: var(--gold-soft);
+}
+.intro .odia {
+  font-size: 1.15rem;
+}
+.tagline {
+  color: var(--saffron);
+  margin: 0 0 0.8rem;
+  letter-spacing: 0.04em;
+}
+.controls {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 0.25rem 0.9rem;
+  text-align: left;
+  font-size: 0.85rem;
+  color: var(--muted);
+  margin: 0 auto 1rem;
+  max-width: 420px;
+}
+.controls dt {
+  color: var(--gold-soft);
+}
+.controls dd {
+  margin: 0;
+}
+.quality {
+  display: inline-flex;
+  gap: 0.6rem;
+  align-items: center;
+  font-size: 0.85rem;
+  color: var(--muted);
+}
+.quality select {
+  border-radius: 8px;
+  background: var(--panel-solid);
+}
+
+/* HUD */
+.compass {
+  position: fixed;
+  top: 12px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: min(320px, 60vw);
+  height: 34px;
+  background: var(--panel);
+  border-radius: 999px;
+  overflow: hidden;
+  border: 1px solid rgba(242, 184, 75, 0.35);
+  pointer-events: none;
+  z-index: 5;
+}
+.hud-left {
+  position: fixed;
+  top: 12px;
+  left: 16px;
+  z-index: 5;
+  pointer-events: none;
+  padding: 8px 16px 9px;
+  border-radius: 14px;
+  background: rgba(24, 14, 6, 0.6);
+  backdrop-filter: blur(8px);
+  border: 1px solid rgba(242, 184, 75, 0.22);
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
+}
+.site-name {
+  font-family: var(--display);
+  color: var(--gold-soft);
+  font-size: 1.15rem;
+}
+.counter {
+  font-size: 0.85rem;
+}
+.visited {
+  color: #d9c7a6;
+}
+.crosshair {
+  position: fixed;
+  left: 50%;
+  top: 50%;
+  width: 6px;
+  height: 6px;
+  margin: -3px 0 0 -3px;
+  border-radius: 50%;
+  background: var(--gold-soft);
+  box-shadow: 0 0 6px var(--gold);
+  pointer-events: none;
+  z-index: 4;
+}
+.hint {
+  position: fixed;
+  bottom: 18px;
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: 0.8rem;
+  color: var(--muted);
+  background: var(--panel);
+  padding: 0.35rem 0.9rem;
+  border-radius: 999px;
+  pointer-events: none;
+  z-index: 4;
+  white-space: nowrap;
+}
+.prompt {
+  position: fixed;
+  bottom: 64px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  background: var(--panel);
+  color: var(--gold-soft);
+  z-index: 6;
+}
+
+/* story card */
+.card-wrap {
+  position: fixed;
+  inset: auto 0 0 0;
+  display: flex;
+  justify-content: center;
+  padding: 16px;
+  z-index: 10;
+  pointer-events: none;
+}
+.card {
+  pointer-events: auto;
+  width: min(560px, 100%);
+  max-height: 70vh;
+  overflow-y: auto;
+  background: var(--panel);
+  backdrop-filter: blur(10px);
+  border-radius: 16px;
+  padding: 1.6rem 1.6rem 1.4rem;
+  animation: rise 0.35s ease-out;
+}
+@keyframes rise {
+  from {
+    transform: translateY(20px);
+    opacity: 0;
+  }
+}
+.badge {
+  padding: 0.1rem 0.55rem;
+  border-radius: 999px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  font-size: 0.68rem;
+}
+.badge.legend {
+  background: var(--legend);
+}
+.badge.tradition {
+  background: var(--tradition);
+}
+.card h2 {
+  font-family: var(--display);
+  font-weight: 400;
+  color: var(--gold-soft);
+  margin: 0.35rem 0 0;
+  font-size: 1.6rem;
+}
+.card-body {
+  line-height: 1.6;
+  margin: 0.4rem 0 1rem;
+}
+.card figure {
+  margin: 0 0 0.8rem;
+}
+.card img {
+  width: 100%;
+  border-radius: 10px;
+}
+.card figcaption {
+  font-size: 0.7rem;
+  color: var(--muted);
+}
+.card-actions {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+.recon-label {
+  color: var(--gold-soft);
+  font-size: 0.85rem;
+  border-left: 3px solid var(--gold);
+  padding-left: 0.6rem;
+}
+
+/* touch */
+.touch-layer {
+  position: fixed;
+  inset: 0;
+  z-index: 3;
+  touch-action: none;
+}
+.stick {
+  position: absolute;
+  left: 28px;
+  bottom: 28px;
+  width: 120px;
+  height: 120px;
+  border-radius: 50%;
+  background: rgba(34, 22, 14, 0.45);
+  border: 1px solid rgba(242, 184, 75, 0.5);
+  display: grid;
+  place-items: center;
+}
+.stick-knob {
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+  background: radial-gradient(circle, var(--gold-soft), var(--gold));
+  opacity: 0.85;
+}
+
+@media (max-width: 640px) {
+  .compass {
+    top: 56px;
+  }
+  .card {
+    max-height: 55vh;
+    padding: 1.3rem 1.1rem 1.1rem;
+  }
+  .prompt {
+    bottom: 170px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .spinning {
+    animation: none;
+  }
+  .card {
+    animation: none;
+  }
+}
+
+/* aerial map */
+.map-pin {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 0;
+  border: 0;
+  background: none;
+  border-radius: 0;
+  transform: translateY(-50%);
+}
+.map-pin:hover:not(:disabled) {
+  background: none;
+}
+.map-landmark {
+  font-family: var(--display);
+  font-size: 0.85rem;
+  color: #fff6e6;
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.9), 0 0 8px rgba(0, 0, 0, 0.6);
+  white-space: nowrap;
+  pointer-events: none;
+}
+.map-me {
+  display: inline-block;
+  padding: 0.15rem 0.5rem;
+  border-radius: 999px;
+  background: #3b82c4;
+  color: white;
+  font-size: 0.72rem;
+  font-weight: 600;
+  white-space: nowrap;
+  box-shadow: 0 0 0 3px rgba(59, 130, 196, 0.35);
+}
+.map-bar {
+  position: fixed;
+  top: 12px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  gap: 0.8rem;
+  align-items: center;
+  padding: 0.35rem 0.4rem 0.35rem 1rem;
+  background: var(--panel);
+  border: 1px solid rgba(242, 184, 75, 0.35);
+  border-radius: 999px;
+  font-size: 0.85rem;
+  z-index: 6;
+  white-space: nowrap;
+}
+.map-zoom {
+  position: fixed;
+  right: 16px;
+  bottom: 16px;
+  display: grid;
+  gap: 0.3rem;
+  z-index: 6;
+}
+.map-zoom button {
+  width: 2.4rem;
+  height: 2.4rem;
+  padding: 0;
+  font-size: 1.2rem;
+  background: var(--panel);
+}
+
+/* story panel beside the walk */
+.story-panel {
+  position: fixed;
+  top: 64px;
+  right: 16px;
+  bottom: 16px;
+  width: min(410px, calc(100vw - 32px));
+  display: flex;
+  flex-direction: column;
+  background: var(--panel);
+  backdrop-filter: blur(10px);
+  border-radius: 16px;
+  overflow: hidden;
+  z-index: 10;
+  animation: slide 0.35s ease-out;
+}
+@keyframes slide {
+  from {
+    transform: translateX(30px);
+    opacity: 0;
+  }
+}
+.story-panel.pattern-border::before {
+  display: none;
+}
+.story-photo {
+  margin: 0;
+  flex: none;
+  position: relative;
+  background: #120b06;
+}
+.photo-frame {
+  display: block;
+  width: 100%;
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  background: none;
+  cursor: zoom-in;
+}
+.story-photo img {
+  display: block;
+  width: 100%;
+  height: clamp(130px, 26vh, 260px);
+  object-fit: cover;
+}
+.story-photo figcaption {
+  padding: 0.5rem 1.2rem 0;
+  font-size: 0.8rem;
+  color: var(--text);
+}
+.credit {
+  display: block;
+  font-size: 0.72rem;
+  color: var(--muted);
+  margin-top: 0.15rem;
+}
+.credit a {
+  color: var(--muted);
+}
+.story-text {
+  padding: 0.8rem 1.2rem 0.4rem;
+  overflow-y: auto;
+  flex: 1;
+  min-height: 0;
+}
+@media (max-width: 1180px) {
+  .compass {
+    top: 60px;
+  }
+}
+.story-text h2 {
+  font-family: var(--display);
+  font-weight: 400;
+  color: var(--gold-soft);
+  margin: 0.3rem 0 0;
+  font-size: 1.55rem;
+}
+.story-text .card-body span {
+  transition: color 0.3s, background 0.3s;
+  border-radius: 4px;
+}
+.story-text .card-body .now,
+.story-text h2.now {
+  color: #fff;
+  background: rgba(242, 184, 75, 0.18);
+  box-shadow: 0 0 0 2px rgba(242, 184, 75, 0.18);
+}
+.story-text .card-body .said {
+  color: var(--muted);
+}
+.narration {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+  align-items: center;
+  margin-bottom: 0.9rem;
+}
+.narration button {
+  font-size: 0.82rem;
+  padding: 0.35rem 0.8rem;
+}
+.lightbox {
+  position: fixed;
+  inset: 0;
+  z-index: 30;
+  background: rgba(10, 6, 3, 0.92);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+  cursor: zoom-out;
+}
+.lightbox img {
+  max-width: 100%;
+  max-height: calc(100vh - 100px);
+  object-fit: contain;
+  border-radius: 8px;
+}
+.lightbox p {
+  max-width: 800px;
+  text-align: center;
+  font-size: 0.9rem;
+}
+.touch-layer.panel-open .stick {
+  bottom: calc(60vh + 16px);
+}
+
+@media (max-width: 640px) {
+  .intro {
+    align-items: flex-end;
+    background: linear-gradient(0deg, rgba(30, 18, 10, 0.6), transparent 60%);
+  }
+  .story-panel {
+    top: auto;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    width: 100%;
+    max-height: 60vh;
+    border-radius: 16px 16px 0 0;
+  }
+  .story-photo img {
+    height: 96px;
+  }
+  .story-photo figcaption {
+    padding: 0.3rem 1rem 0;
+    font-size: 0.72rem;
+  }
+  .story-text h2 {
+    font-size: 1.25rem;
+  }
+  .intro h1 {
+    font-size: 1.7rem;
+  }
+  .map-bar span {
+    display: none;
+  }
+}
+
+/* design capture: hide every overlay, keep only the 3D canvas */
+body.clean #root > :not(:first-child),
+body.clean .map-pin,
+body.clean .map-landmark,
+body.clean .map-me {
+  display: none !important;
+}
+
+/* ---------- walk HUD: one ⋯ button that fans out into an arc of icons ---------- */
+.radial {
+  position: fixed;
+  top: 14px;
+  right: 14px;
+  z-index: 60;
+  width: 46px;
+  height: 46px;
+}
+.radial-toggle,
+.radial-item {
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: 46px;
+  height: 46px;
+  display: grid;
+  place-items: center;
+  padding: 0;
+  border-radius: 50%;
+  border: 1px solid rgba(255, 214, 150, 0.35);
+  color: var(--cream);
+  background: radial-gradient(circle at 35% 25%, #6b4424, #2e1a0c 75%);
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.45), inset 0 1px 1px rgba(255, 230, 190, 0.25);
+  cursor: pointer;
+}
+.radial-toggle {
+  z-index: 2;
+  transition: transform 0.3s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+.radial.open .radial-toggle {
+  transform: rotate(90deg);
+}
+.radial-item {
+  width: 42px;
+  height: 42px;
+  top: 2px;
+  right: 2px;
+  opacity: 0;
+  transform: translate(0, 0) scale(0.4);
+  pointer-events: none;
+  transition:
+    transform 0.38s cubic-bezier(0.2, 0.9, 0.25, 1.15) var(--d),
+    opacity 0.25s ease var(--d);
+}
+.radial.open .radial-item {
+  opacity: 1;
+  transform: translate(var(--x), var(--y)) scale(1);
+  pointer-events: auto;
+}
+.radial-item.on {
+  color: var(--ink-on-gold);
+  background: radial-gradient(circle at 35% 25%, var(--gold-light), #d39a42 75%);
+}
+.radial-item:disabled {
+  opacity: 0.45 !important;
+}
+.radial-item:hover {
+  filter: brightness(0.82);
+}
+@media (prefers-reduced-motion: reduce) {
+  .radial-item,
+  .radial-toggle {
+    transition: opacity 0.15s;
+  }
+}
+
+/* ---------- corner map ---------- */
+.minimap {
+  position: fixed;
+  left: 20px;
+  bottom: 20px;
+  z-index: 12;
+  width: 228px;
+}
+.minimap svg {
+  display: block;
+  width: 228px;
+  height: 228px;
+  overflow: visible;
+  border-radius: 50%;
+  filter: drop-shadow(0 10px 18px rgba(0, 0, 0, 0.55));
+}
+.mm-outer {
+  stroke: #9a7038;
+  stroke-width: 0.9;
+}
+.mm-inner-line {
+  fill: none;
+  stroke: rgba(216, 170, 92, 0.35);
+  stroke-width: 0.5;
+}
+.mm-north {
+  fill: #ff8a3d;
+}
+.mm-lubber {
+  fill: var(--ivory);
+  stroke: var(--ink-deep);
+  stroke-width: 0.6;
+}
+.mm-sun circle {
+  fill: #ffcf5a;
+  filter: drop-shadow(0 0 2px #ffb04a);
+}
+.mm-sun line {
+  stroke: #ffcf5a;
+  stroke-width: 1;
+  stroke-linecap: round;
+}
+.mm-dd {
+  fill: #c9a46a;
+  font: 600 5.2px var(--body);
+}
+/* the direction you face, under the mark at the top */
+.minimap text.facing {
+  fill: var(--ivory);
+  font-size: 10.5px;
+  font-weight: 700;
+  paint-order: stroke;
+  stroke: #ff9a3d;
+  stroke-width: 1.6px;
+  stroke-opacity: 0.55;
+}
+.mm-court {
+  fill: #9c8264;
+  opacity: 0.85;
+}
+.mm-lawn {
+  fill: #4c6a30;
+}
+.mm-ruin {
+  fill: #6f5c48;
+}
+.mm-temple {
+  fill: #4b3726;
+  stroke: #c9a46a;
+  stroke-width: 0.5;
+}
+.mm-main {
+  fill: var(--umber-light);
+  stroke: var(--gold-leaf);
+  stroke-width: 0.8;
+}
+.mm-wall {
+  fill: none;
+  stroke: #b0643a;
+  stroke-width: 1.4;
+}
+.mm-rim {
+  fill: none;
+  stroke: #d8aa5c;
+  stroke-width: 1.2;
+}
+.mm-bezel line {
+  stroke: #d8aa5c;
+  stroke-width: 0.5;
+  opacity: 0.75;
+}
+.mm-bezel line.major {
+  stroke-width: 0.9;
+  opacity: 1;
+}
+.mm-n,
+.mm-d {
+  font: 700 8px var(--display);
+}
+.mm-n {
+  fill: #ff8a3d;
+  font-size: 9.5px;
+}
+.mm-d {
+  fill: #f0dcb4;
+}
+.mm-me {
+  fill: var(--ivory);
+  stroke: var(--ink-deep);
+  stroke-width: 0.9;
+}
+.mm-stop {
+  cursor: pointer;
+}
+.mm-stop circle:not(.mm-halo) {
+  fill: var(--gold-leaf);
+  stroke: var(--ink-deep);
+  stroke-width: 0.9;
+}
+.mm-stop text {
+  font: 700 6.2px var(--body);
+  fill: var(--ink-deep);
+  pointer-events: none;
+}
+.mm-stop.visited circle:not(.mm-halo) {
+  fill: #8f8268;
+}
+.mm-stop.edge {
+  opacity: 0.9;
+}
+.mm-stop:hover circle:not(.mm-halo) {
+  fill: #c99a3a;
+}
+.mm-halo {
+  fill: none;
+  stroke: #ffb04a;
+  stroke-width: 1.2;
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: mm-pulse 1.6s ease-out infinite;
+}
+@keyframes mm-pulse {
+  from {
+    transform: scale(0.7);
+    opacity: 0.9;
+  }
+  to {
+    transform: scale(1.5);
+    opacity: 0;
+  }
+}
+.mm-caption {
+  margin: 8px 0 0;
+  max-width: 210px;
+  padding: 6px 12px;
+  border-radius: 999px;
+  background: rgba(24, 14, 6, 0.78);
+  color: var(--cream);
+  font-size: 0.78rem;
+  text-align: center;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.mm-caption span {
+  color: var(--gold-leaf);
+  font-weight: 600;
+  margin-right: 2px;
+}
+
+/* enlarged photo: arrows, no auto-advance */
+.lb-arrow {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 56px;
+  height: 56px;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  border: 1px solid rgba(255, 214, 150, 0.4);
+  background: rgba(20, 12, 6, 0.6);
+  color: var(--cream);
+}
+.lb-arrow.prev {
+  left: 24px;
+}
+.lb-arrow.next {
+  right: 24px;
+}
+.lb-count {
+  position: absolute;
+  top: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: 0.85rem;
+  color: var(--cream);
+  background: rgba(20, 12, 6, 0.6);
+  padding: 4px 12px;
+  border-radius: 999px;
+}
+
+/* ---------- story panel ---------- */
+.story-panel {
+  top: 76px;
+  width: min(460px, calc(100vw - 32px));
+}
+.ic {
+  display: grid;
+  place-items: center;
+  width: 34px;
+  height: 34px;
+  padding: 0;
+  border-radius: 50%;
+  border: 1px solid rgba(255, 214, 150, 0.25);
+  background: rgba(255, 240, 210, 0.06);
+  color: var(--text);
+}
+.ic:hover:not(:disabled) {
+  background: rgba(10, 6, 2, 0.45);
+  filter: none;
+}
+.ic.play:hover:not(:disabled) {
+  background: linear-gradient(135deg, #d8b860, #a8732c);
+}
+.ic.play {
+  width: 44px;
+  height: 44px;
+  color: var(--ink-on-gold);
+  background: linear-gradient(135deg, var(--gold-light), #d39a42);
+  border: 0;
+}
+.photo-frame {
+  position: relative;
+  overflow: hidden;
+  height: clamp(220px, 38vh, 400px);
+}
+.story-photo img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  opacity: 0;
+  transition: opacity 0.9s ease;
+}
+.story-photo img.on {
+  opacity: 1;
+}
+.story-photo figcaption {
+  height: 5.6em;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+}
+.story-photo figcaption > :first-child,
+.story-photo figcaption {
+  text-overflow: ellipsis;
+}
+.photo-dots {
+  position: absolute;
+  top: calc(clamp(220px, 38vh, 400px) - 22px);
+  left: 0;
+  right: 0;
+  display: flex;
+  justify-content: center;
+  gap: 6px;
+  pointer-events: none;
+}
+.photo-dots span {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: rgba(255, 240, 210, 0.45);
+}
+.photo-dots span.on {
+  background: var(--gold-light);
+}
+.story-photo figcaption {
+  padding: 14px 20px 14px;
+  font-size: 0.86rem;
+  line-height: 1.5;
+}
+.story-photo figcaption .credit {
+  margin-top: 6px;
+}
+/* the text takes only the room it needs, and scrolls past the panel's height */
+.story-text {
+  flex: 0 1 auto;
+  padding: 6px 20px 16px;
+  overflow-y: auto;
+}
+.story-text h2 {
+  margin: 0 0 4px;
+  font-family: var(--display);
+  font-weight: 700;
+  font-size: 1.75rem;
+  line-height: 1.1;
+}
+.story-text .card-body {
+  margin: 10px 0 0;
+  font-size: 1rem;
+  line-height: 1.6;
+}
+.story-panel {
+  bottom: auto;
+  max-height: calc(100vh - 92px);
+}
+.story-player {
+  flex: none;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 18px 16px;
+  border-top: 1px solid rgba(242, 184, 75, 0.18);
+}
+/* one segment per sentence; click one to hear the story again from there */
+.player-track {
+  flex: 1;
+  display: flex;
+  gap: 3px;
+  min-width: 0;
+}
+.player-track .seg {
+  --c: rgba(255, 240, 210, 0.18);
+  flex: 1;
+  min-width: 4px;
+  height: 18px;
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  background: linear-gradient(var(--c), var(--c)) center / 100% 4px no-repeat;
+  cursor: pointer;
+  transition: background-size 0.15s ease;
+}
+.player-track .seg:hover,
+.player-track .seg:focus-visible {
+  --c: #a77a36;
+  background-size: 100% 8px;
+}
+.player-track .seg.said {
+  --c: #c99a4a;
+}
+.player-track .seg.now {
+  --c: var(--gold-light);
+  background-size: 100% 6px;
+}
+.player-track .seg.now.live {
+  animation: seg-live 1.4s ease-in-out infinite;
+}
+@keyframes seg-live {
+  50% {
+    filter: brightness(1.3);
+  }
+}
+.story-text .card-body span {
+  cursor: pointer;
+}
+.story-text .card-body span:hover {
+  background: rgba(10, 6, 2, 0.4);
+}
+.player-count {
+  font-size: 0.75rem;
+  color: var(--muted);
+  min-width: 2.6em;
+  text-align: right;
+}
+
+/* ---------- the story, docked to the right edge ---------- */
+.story-dock {
+  position: fixed;
+  top: 76px;
+  right: 0;
+  z-index: 10;
+  width: min(460px, calc(100vw - 48px));
+  max-height: calc(100vh - 92px);
+  display: flex;
+  transition: transform 0.45s cubic-bezier(0.2, 0.8, 0.2, 1);
+  animation: dock-in 0.45s cubic-bezier(0.2, 0.8, 0.2, 1) both;
+}
+@keyframes dock-in {
+  from {
+    transform: translateX(100%);
+  }
+}
+.story-dock.min {
+  transform: translateX(100%);
+}
+.story-dock .story-panel {
+  position: relative;
+  inset: auto;
+  width: 100%;
+  max-height: 100%;
+  border-radius: 16px 0 0 16px;
+  border-right: 0;
+  animation: none;
+}
+/* the handle on the panel's left edge: a chevron, and the stop's name when hidden */
+.story-tab {
+  position: absolute;
+  right: 100%;
+  top: 22px;
+  width: 36px;
+  min-height: 60px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 10px 0;
+  border: 1px solid rgba(242, 184, 75, 0.35);
+  border-right: 0;
+  border-radius: 12px 0 0 12px;
+  background: var(--panel);
+  backdrop-filter: blur(10px);
+  color: var(--gold-soft);
+  cursor: pointer;
+  box-shadow: -6px 6px 16px rgba(0, 0, 0, 0.3);
+}
+.story-tab:hover {
+  background: rgba(14, 8, 3, 0.92);
+  filter: none;
+}
+.tab-ring {
+  position: relative;
+  display: grid;
+  place-items: center;
+  width: 24px;
+  height: 24px;
+}
+.tab-ring svg {
+  position: absolute;
+  inset: 0;
+}
+.tab-ring .ring-bg {
+  fill: none;
+  stroke: rgba(255, 240, 210, 0.15);
+  stroke-width: 2;
+}
+.tab-ring .ring-fg {
+  fill: none;
+  stroke: var(--gold-leaf);
+  stroke-width: 2;
+  stroke-linecap: round;
+  transition: stroke-dasharray 0.4s ease;
+}
+.story-tab .tab-name {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  max-height: 52vh;
+  overflow: hidden;
+}
+.story-tab .tab-chev {
+  display: grid;
+  place-items: center;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: rgba(242, 184, 75, 0.14);
+  color: var(--gold-leaf);
+}
+.story-tab .tab-title {
+  writing-mode: vertical-rl;
+  font-family: var(--display);
+  font-weight: 600;
+  font-size: 1.02rem;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.story-badges {
+  display: flex;
+  gap: 6px;
+  margin: 6px 0 8px;
+}
+@media (prefers-reduced-motion: reduce) {
+  .story-dock {
+    transition: none;
+    animation: none;
+  }
+}
+.mm-leader {
+  stroke: rgba(242, 200, 98, 0.8);
+  stroke-width: 0.7;
+}
+
+/* ---- small interactions ---- */
+/* a press gives a little; `scale` composes with the translate/transform that place pins */
+button {
+  transition: background 0.15s, border-color 0.15s, scale 0.12s ease;
+}
+button:active:not(:disabled):not(.seg):not(.photo-frame):not(.konark-hot-btn) {
+  scale: 0.95;
+}
+/* moving between stops: the photo and text settle in, the dock stays put */
+.story-photo.swap {
+  animation: swap-fade 0.45s ease both;
+}
+.story-text.swap > * {
+  animation: swap-up 0.5s cubic-bezier(0.2, 0.8, 0.2, 1) both;
+}
+.story-text.swap > :nth-child(2) {
+  animation-delay: 0.06s;
+}
+.story-text.swap > :nth-child(3) {
+  animation-delay: 0.12s;
+}
+.story-text.swap > :nth-child(4) {
+  animation-delay: 0.18s;
+}
+@keyframes swap-fade {
+  from {
+    opacity: 0;
+  }
+}
+@keyframes swap-up {
+  from {
+    opacity: 0;
+    translate: 0 8px;
+  }
+}
+/* a sentence you could click to hear */
+.story-text .card-body span:not(.now):hover {
+  background: rgba(242, 184, 75, 0.1);
+}
+/* play and pause trade places with a small pop */
+.ic.play svg {
+  animation: pop 0.22s cubic-bezier(0.2, 0.9, 0.3, 1.4);
+}
+@keyframes pop {
+  from {
+    scale: 0.6;
+    opacity: 0;
+  }
+}
+/* the tab's chevron turns rather than swapping */
+.story-tab .tab-chev svg {
+  transition: rotate 0.35s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+.story-tab .tab-chev.flip svg {
+  rotate: 180deg;
+}
+.story-tab:hover .tab-chev {
+  background: rgba(242, 184, 75, 0.26);
+}
+/* the enlarged photo opens from the panel instead of appearing */
+.lightbox {
+  animation: swap-fade 0.25s ease both;
+}
+.lightbox img {
+  animation: lb-in 0.35s cubic-bezier(0.2, 0.8, 0.2, 1) both;
+}
+@keyframes lb-in {
+  from {
+    opacity: 0;
+    scale: 0.94;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .story-photo.swap,
+  .story-text.swap > *,
+  .ic.play svg,
+  .lightbox,
+  .lightbox img {
+    animation: none;
+  }
+  .story-tab .tab-chev svg {
+    transition: none;
+  }
+}
+/* longer stories: the text softens out at the bottom edge so it reads as scrollable */
+.story-dock .story-text {
+  mask-image: linear-gradient(to bottom, #000 calc(100% - 26px), transparent);
+  padding-bottom: 1.4rem;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(242, 184, 75, 0.35) transparent;
+}

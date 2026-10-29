@@ -1,0 +1,233 @@
+/* Scene 5 — the Konark overview */
+.overview-ui {
+  position: fixed;
+  inset: 0;
+  z-index: 30;
+  pointer-events: none;
+}
+.overview-ui > * {
+  pointer-events: auto;
+}
+/* the welcome scroll, pinned over the scene */
+.overview-panel {
+  position: absolute !important;
+  left: 40px;
+  top: 50%;
+  transform: translateY(-50%);
+}
+.overview-kicker {
+  margin: 0;
+  font-family: var(--body);
+  font-size: 1.05rem;
+  color: var(--umber);
+}
+.overview-panel h1 {
+  margin: 2px 0 2px;
+  color: var(--ink-deep);
+  font-family: var(--display);
+  font-weight: 400;
+  font-size: 2.3rem;
+  line-height: 1.05;
+}
+.overview-panel:lang(hi) h1 {
+  font-family: var(--display);
+}
+.overview-panel:lang(or) h1 {
+  font-family: var(--display);
+}
+.overview-line {
+  margin: 6px 0 6px;
+  line-height: 1.45;
+}
+.overview-meta {
+  margin: 0 0 16px;
+  font-family: var(--body);
+  color: var(--umber);
+}
+.link-quiet {
+  display: block;
+  border: 0;
+  background: none;
+  padding: 0;
+  font-family: var(--body);
+  font-size: 1rem;
+  color: var(--umber);
+  cursor: pointer;
+}
+/* the 3D markers: small turning wheels */
+.wheel-pin {
+  position: relative;
+  display: grid;
+  place-items: center;
+  width: 34px;
+  height: 34px;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(255, 220, 150, 0.35), rgba(255, 200, 120, 0) 70%);
+  cursor: pointer;
+}
+.wheel-pin svg {
+  color: #ffd27a;
+  filter: drop-shadow(0 0 6px rgba(232, 176, 74, 0.8)) drop-shadow(0 1px 2px rgba(0, 0, 0, 0.8));
+  animation: spin 12s linear infinite;
+}
+.wheel-pin .num {
+  position: absolute;
+  right: -6px;
+  top: -6px;
+  min-width: 17px;
+  height: 17px;
+  border-radius: 9px;
+  background: var(--bark);
+  color: var(--cream);
+  font: 700 10px/17px var(--body);
+  text-align: center;
+}
+@media (max-width: 760px) {
+  .overview-panel {
+    top: auto;
+    bottom: 12px;
+    left: 22px;
+    transform: none;
+  }
+  .overview-panel h1 {
+    font-size: 1.8rem;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .wheel-pin svg {
+    animation: none;
+  }
+}
+
+/* placed with the `translate` property each frame; they grow in where they stand */
+.wheel-pin.plan-pin {
+  position: absolute;
+  left: 0;
+  top: 0;
+  will-change: translate;
+}
+.wheel-pin.plan-pin,
+.map-pins > .wheel-pin {
+  animation: pin-in 0.45s cubic-bezier(0.2, 0.9, 0.3, 1.25) both;
+  animation-delay: calc(var(--i, 0) * 40ms);
+}
+@keyframes pin-in {
+  from {
+    opacity: 0;
+    scale: 0;
+  }
+}
+.plan-pin:hover svg,
+.plan-pin:focus-visible svg {
+  scale: 1.18;
+  transition: scale 0.25s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+/* stop and landmark labels over the 3D map, placed each frame by transform */
+.map-pins {
+  position: fixed;
+  inset: 0;
+  z-index: 25;
+  pointer-events: none;
+  overflow: hidden;
+}
+.map-pins > * {
+  position: absolute !important;
+  left: 0;
+  top: 0;
+  pointer-events: auto;
+  transform: translate(-50%, -50%);
+  will-change: translate;
+}
+.map-pins > .map-landmark,
+.map-pins > .map-me {
+  pointer-events: none;
+}
+.map-pins > .wheel-pin:hover svg,
+.map-pins > .wheel-pin:focus-visible svg {
+  scale: 1.18;
+  transition: scale 0.25s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+/* welcome scroll: back + view at the top, the place in the middle, the action at the foot */
+.overview-panel .scroll-content {
+  padding: 30px 22px 28px;
+}
+.ov {
+  display: flex;
+  flex-direction: column;
+  gap: 22px;
+}
+.ov-top {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 12px;
+  padding-bottom: 18px;
+  border-bottom: 1px solid rgba(74, 40, 16, 0.22);
+}
+.ov-body .overview-kicker {
+  margin: 0 0 6px;
+  font-size: 0.78rem;
+  font-weight: 600;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: #7a4a22;
+}
+.ov-body h1 {
+  margin: 0 0 12px;
+  font-family: var(--display);
+  font-weight: 700;
+  font-size: 2.5rem;
+  line-height: 1.02;
+  color: var(--ink-deep);
+}
+.ov-body .overview-line {
+  margin: 0 0 10px;
+  font-size: 0.98rem;
+  line-height: 1.55;
+  color: var(--ink-warm);
+}
+.ov-body .overview-meta {
+  margin: 0;
+  font-size: 0.85rem;
+  color: var(--umber-light);
+}
+.ov .gold-btn {
+  margin-top: 4px;
+}
+
+/* a vignette over the stone view, in CSS (cheaper than a post-processing pass) */
+.stone-plan::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: radial-gradient(ellipse at 55% 50%, rgba(0, 0, 0, 0) 45%, rgba(10, 5, 2, 0.6) 100%);
+}
+
+/* leader lines from fanned-out wheels to their true spots on the model */
+.pin-leaders {
+  position: fixed;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  overflow: visible;
+}
+.pin-leaders line {
+  stroke: rgba(255, 220, 150, 0.75);
+  stroke-width: 1.2;
+  opacity: 0;
+  transition: opacity 0.25s;
+  filter: drop-shadow(0 1px 1px rgba(0, 0, 0, 0.8));
+}
+.pin-leaders circle {
+  fill: #ffd27a;
+  stroke: var(--ink-deep);
+  stroke-width: 0.8;
+  opacity: 0;
+  transition: opacity 0.25s;
+}

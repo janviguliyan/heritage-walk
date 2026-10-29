@@ -1,0 +1,700 @@
+{
+  "id": "konark",
+  "name": {
+    "en": "Konark Sun Temple"
+  },
+  "tagline": "Walk the Sun's chariot at dawn",
+  "intro": "A 13th-century temple to Surya, the Sun god, built as a giant stone chariot on the coast of Odisha. Arrive at the east gate as the first light does, and walk west towards the sanctuary. Ten glowing wheels mark the stories.",
+  "story": [
+    {
+      "art": "sun",
+      "text": "Around 1250 CE, on the coast of Odisha, King Narasimha Deva the First of the Eastern Ganga dynasty built a temple to Surya, the Sun god."
+    },
+    {
+      "art": "chariot",
+      "text": "He made it as the Sun's own chariot: twenty-four carved wheels, drawn by seven horses, facing the sunrise."
+    },
+    {
+      "art": "artisans",
+      "text": "Legend says twelve hundred artisans worked for twelve years to raise it.",
+      "legend": true
+    },
+    {
+      "art": "ruin",
+      "text": "Over the centuries its great tower fell. In 1903 the hall that still stands was filled with sand to keep it from collapsing."
+    },
+    {
+      "art": "dawn",
+      "text": "Today we arrive the way the first light does — from the east. Let's walk the chariot."
+    }
+  ],
+  "start": {
+    "position": [
+      101,
+      0,
+      0
+    ],
+    "lookAt": [
+      0,
+      18,
+      0
+    ]
+  },
+  "overview": {
+    "target": [
+      0,
+      0,
+      4
+    ],
+    "bearing": 118,
+    "elevation": 42,
+    "distance": 165
+  },
+  "landmarks": [
+    {
+      "name": "East gate",
+      "position": [
+        105,
+        10,
+        0
+      ]
+    },
+    {
+      "name": "Nata mandir",
+      "position": [
+        46,
+        9,
+        -14
+      ]
+    },
+    {
+      "name": "Jagamohana",
+      "position": [
+        -5,
+        40,
+        0
+      ]
+    },
+    {
+      "name": "Deul (sanctuary ruin)",
+      "position": [
+        -44,
+        4,
+        -24
+      ]
+    },
+    {
+      "name": "Mayadevi Temple",
+      "position": [
+        -75,
+        8,
+        45
+      ]
+    }
+  ],
+  "hotspots": [
+    {
+      "id": "arrival",
+      "position": [
+        97,
+        1.8,
+        -3.5
+      ],
+      "view": {
+        "position": [
+          101,
+          0,
+          0
+        ],
+        "lookAt": [
+          0,
+          18,
+          0
+        ]
+      },
+      "title": {
+        "en": "Arrival at dawn"
+      },
+      "body": "You are standing at the eastern gate, where every visitor to the Sun god once began. The name Konark joins two Sanskrit words: kona, meaning corner, and arka, meaning the sun. The temple was built around the year 1250, under King Narasimha Deva the First, of the Eastern Ganga dynasty. It faces east, so that the first light of each morning falls on its entrance. Sailors on the Bay of Bengal steered by its dark tower. They called it the Black Pagoda, to tell it apart from the white temple of Jagannath at Puri, which they called the White Pagoda.",
+      "photos": [
+        {
+          "src": "img/arrival-1.jpg",
+          "caption": "The temple from its gardens: the jagamohana rises above the carved plinth.",
+          "author": "Joydeep Chakraborty",
+          "licence": "CC BY-SA 4.0",
+          "licenceUrl": "https://creativecommons.org/licenses/by-sa/4.0",
+          "source": "https://commons.wikimedia.org/wiki/File:Konark_Sun_Temple_Puri_district,_Odisha,_India_3.jpg"
+        },
+        {
+          "src": "img/arrival-2.jpg",
+          "caption": "The north-east corner of the temple.",
+          "author": "Bikashrd",
+          "licence": "CC BY-SA 4.0",
+          "licenceUrl": "https://creativecommons.org/licenses/by-sa/4.0",
+          "source": "https://commons.wikimedia.org/wiki/File:Konark_Sun_Temple_-_North_East_Corner_View.jpg"
+        }
+      ]
+    },
+    {
+      "id": "gaja-simha",
+      "position": [
+        73,
+        1.6,
+        -3.5
+      ],
+      "view": {
+        "position": [
+          77,
+          0,
+          0
+        ],
+        "lookAt": [
+          68.5,
+          3.5,
+          0
+        ]
+      },
+      "title": {
+        "en": "The gaja-simha guardians"
+      },
+      "body": "At the foot of the eastern steps, two great lions rear up over crouching elephants. Look closely, and you will see that each elephant, in turn, pins a human figure beneath it. Each group is carved from a single block of stone. Many see in it pride crushing wealth, and wealth crushing people. Others see in it the power of the kingdom over its rivals. Guardians like these are a favourite theme of Kalinga sculpture, and they have greeted visitors here for nearly eight hundred years.",
+      "photos": [
+        {
+          "src": "img/gaja-1.jpg",
+          "caption": "Gaja-simha: lions over elephants beside the dance hall.",
+          "author": "Bernard Gagnon",
+          "licence": "CC BY-SA 3.0",
+          "licenceUrl": "https://creativecommons.org/licenses/by-sa/3.0",
+          "source": "https://commons.wikimedia.org/wiki/File:Dance_Pavilion,_Kon%C3%A2rak_-_Lions.jpg"
+        },
+        {
+          "src": "img/gaja-2.jpg",
+          "caption": "A gaja-simha guardian, larger than life.",
+          "author": "Bikashrd",
+          "licence": "CC BY-SA 4.0",
+          "licenceUrl": "https://creativecommons.org/licenses/by-sa/4.0",
+          "source": "https://commons.wikimedia.org/wiki/File:GajaNarasimha_-_Sun_Temple_Konark.jpg"
+        }
+      ]
+    },
+    {
+      "id": "nata-mandir",
+      "position": [
+        51,
+        5.6,
+        0
+      ],
+      "view": {
+        "position": [
+          55.5,
+          4,
+          0
+        ],
+        "lookAt": [
+          40,
+          5.5,
+          0
+        ]
+      },
+      "via": [
+        [
+          67,
+          0,
+          0
+        ],
+        [
+          57.5,
+          4,
+          0
+        ]
+      ],
+      "title": {
+        "en": "Nata mandir, the dance hall"
+      },
+      "body": "This high platform is the nata mandir, the hall of dance. Its roof fell long ago, but its pillars and walls are still crowded with musicians and dancers, frozen in the middle of a beat. Look for drummers, cymbal players and flute players, and for dancers with bent knees and raised arms. Temple dancers once performed here, as an offering to the Sun god. Their movements live on in Odissi, one of India's classical dance forms. Every December, the Konark Dance Festival brings dancers back to Konark, with the temple behind them.",
+      "photos": [
+        {
+          "src": "img/nata-1.jpg",
+          "caption": "The nata mandir’s carved platform, now roofless.",
+          "author": "Bikashrd",
+          "licence": "CC BY-SA 4.0",
+          "licenceUrl": "https://creativecommons.org/licenses/by-sa/4.0",
+          "source": "https://commons.wikimedia.org/wiki/File:Konark_Sun_Temple_-_Natya_Mandir.jpg"
+        },
+        {
+          "src": "img/nata-2.jpg",
+          "caption": "The nata mandir seen across the lawn.",
+          "author": "Bernard Gagnon",
+          "licence": "CC BY-SA 3.0",
+          "licenceUrl": "https://creativecommons.org/licenses/by-sa/3.0",
+          "source": "https://commons.wikimedia.org/wiki/File:Dance_Pavilion,_Kon%C3%A2rak_01.jpg"
+        }
+      ]
+    },
+    {
+      "id": "horses",
+      "position": [
+        24,
+        1.7,
+        9
+      ],
+      "view": {
+        "position": [
+          27,
+          0,
+          13
+        ],
+        "lookAt": [
+          17,
+          2.6,
+          12
+        ]
+      },
+      "via": [
+        [
+          35,
+          4,
+          0
+        ],
+        [
+          25.5,
+          0,
+          0
+        ]
+      ],
+      "title": {
+        "en": "The seven horses"
+      },
+      "body": "The whole temple is imagined as the chariot of the Sun god, and these are the horses that pull it. Seven horses are usually counted, linked with the seven days of the week, or with the seven colours of light. Several are broken now, and what you see is what survives. Look at the details that remain: the jewelled harness across their chests, and the strain in their necks as they pull. Carved centuries ago, they still seem to be setting off towards the sunrise.",
+      "photos": [
+        {
+          "src": "img/horse-1.jpg",
+          "caption": "One of the surviving horse sculptures.",
+          "author": "Vivek Bhavsar",
+          "licence": "CC BY-SA 4.0",
+          "licenceUrl": "https://creativecommons.org/licenses/by-sa/4.0",
+          "source": "https://commons.wikimedia.org/wiki/File:Konark_Sun_Temple_-Horse.jpg"
+        },
+        {
+          "src": "img/horse-2.jpg",
+          "caption": "A horse sculpture against the sky.",
+          "author": "Bharat Bhusan Sahoo",
+          "licence": "CC BY-SA 4.0",
+          "licenceUrl": "https://creativecommons.org/licenses/by-sa/4.0",
+          "source": "https://commons.wikimedia.org/wiki/File:Konark_horse.jpg"
+        }
+      ]
+    },
+    {
+      "id": "wheel",
+      "position": [
+        8.8,
+        1.5,
+        21.2
+      ],
+      "view": {
+        "position": [
+          6,
+          0,
+          22.5
+        ],
+        "lookAt": [
+          6,
+          1.6,
+          18.6
+        ]
+      },
+      "via": [
+        [
+          20,
+          0,
+          24
+        ]
+      ],
+      "title": {
+        "en": "A wheel that tells time"
+      },
+      "body": "Twenty-four great wheels, in twelve pairs, line the base of the temple. Each one is about three metres across, and no two are carved exactly alike. Every wheel has eight thick spokes and eight thin ones, and each is covered in small carved figures. Tradition holds that the wheels work as sundials. The shadow of a spoke, falling across the rim, is said to tell the time of day. Some read deeper meanings too: twelve pairs for the twelve months, and eight spokes for the eight parts of the day. One of these wheels appears on India's ten rupee note.",
+      "tradition": true,
+      "photos": [
+        {
+          "src": "img/wheel-1.jpg",
+          "caption": "One of the 24 carved wheels on the chariot plinth.",
+          "author": "Alokprasad84",
+          "licence": "CC BY 3.0",
+          "licenceUrl": "https://creativecommons.org/licenses/by/3.0",
+          "source": "https://commons.wikimedia.org/wiki/File:Chariot_Wheel_Konark_Sun_Temple.JPG"
+        },
+        {
+          "src": "img/wheel-2.jpg",
+          "caption": "A wheel up close, with carved medallions on its spokes.",
+          "author": "Ankur Panchbudhe",
+          "licence": "CC BY 2.0",
+          "licenceUrl": "https://creativecommons.org/licenses/by/2.0",
+          "source": "https://commons.wikimedia.org/wiki/File:Konark_Sun_Temple_wheel.jpg"
+        }
+      ]
+    },
+    {
+      "id": "friezes",
+      "position": [
+        -24.2,
+        1.4,
+        21.4
+      ],
+      "view": {
+        "position": [
+          -26.5,
+          0,
+          22.5
+        ],
+        "lookAt": [
+          -26.5,
+          3,
+          18
+        ]
+      },
+      "via": [
+        [
+          0,
+          0,
+          28.5
+        ],
+        [
+          -12,
+          0,
+          28.5
+        ]
+      ],
+      "title": {
+        "en": "The plinth friezes"
+      },
+      "body": "Along the base of the plinth run bands of carving, packed with thousands of figures. There are elephants in long processions, hunters with bows, soldiers on the march, and musicians at play. There are scenes of everyday life too: people at work, at prayer and at rest. Among them are mithuna, loving couples, a common theme on temples of this time. Walk slowly, and read them panel by panel. Together, they form a stone encyclopedia of life in thirteenth-century Odisha.",
+      "photos": [
+        {
+          "src": "img/frieze-1.jpg",
+          "caption": "A band of carved figures on the temple walls.",
+          "author": "Bharat Bhusan Sahoo",
+          "licence": "CC BY-SA 4.0",
+          "licenceUrl": "https://creativecommons.org/licenses/by-sa/4.0",
+          "source": "https://commons.wikimedia.org/wiki/File:Some_carvings_on_the_wall_of_Konark.jpg"
+        },
+        {
+          "src": "img/frieze-2.jpg",
+          "caption": "Musicians and dancers alongside mythical creatures.",
+          "author": "SpeakingArch",
+          "licence": "CC BY-SA 4.0",
+          "licenceUrl": "https://creativecommons.org/licenses/by-sa/4.0",
+          "source": "https://commons.wikimedia.org/wiki/File:Sculptures_of_musicians_and_dancers_alongside_mythical_creatures,_Mandapa,_Sun_Temple,_Konark,_Orissa.jpg"
+        }
+      ]
+    },
+    {
+      "id": "jagamohana",
+      "position": [
+        0,
+        1.5,
+        49
+      ],
+      "view": {
+        "position": [
+          3,
+          0,
+          54
+        ],
+        "lookAt": [
+          -5,
+          18,
+          0
+        ]
+      },
+      "via": [
+        [
+          -18,
+          0,
+          34
+        ]
+      ],
+      "title": {
+        "en": "Jagamohana, the audience hall"
+      },
+      "body": "The great stepped pyramid in front of you is the jagamohana, the audience hall. Worshippers once gathered here, before entering the presence of the god. It is the largest part of the temple still standing. Its roof rises in three tiers of carved stone, with life-size musicians standing on the terraces between them. In 1903, to stop the hall from collapsing, its doors were sealed, and it was filled with sand. For more than a century, no one could see inside. In September 2022, the Archaeological Survey of India began carefully removing that sand.",
+      "photos": [
+        {
+          "src": "img/jaga-1.jpg",
+          "caption": "The jagamohana from the east, with its stepped pyramid roof.",
+          "author": "Reema Jalihal",
+          "licence": "CC BY-SA 4.0",
+          "licenceUrl": "https://creativecommons.org/licenses/by-sa/4.0",
+          "source": "https://commons.wikimedia.org/wiki/File:Konark_Sun_Temple_%E2%80%93_Jagamohana,_east_view,_Odisha.jpg"
+        },
+        {
+          "src": "img/jaga-2.jpg",
+          "caption": "The temple in January 1924, two decades after the jagamohana was sealed with sand.",
+          "author": "Georg Morgenstierne",
+          "licence": "Public domain",
+          "source": "https://commons.wikimedia.org/wiki/File:NO-NB_BLDSA_GM2a133n.jpg"
+        }
+      ]
+    },
+    {
+      "id": "surya",
+      "position": [
+        -38.6,
+        5.9,
+        16.6
+      ],
+      "view": {
+        "position": [
+          -42,
+          4.5,
+          17.6
+        ],
+        "lookAt": [
+          -42,
+          7.6,
+          14.4
+        ]
+      },
+      "via": [
+        [
+          -5,
+          0,
+          31
+        ],
+        [
+          -5,
+          0,
+          26.5
+        ],
+        [
+          -5,
+          4.5,
+          17
+        ],
+        [
+          -20,
+          4.5,
+          16.5
+        ],
+        [
+          -36,
+          4.5,
+          16.8
+        ]
+      ],
+      "title": {
+        "en": "Surya in green stone"
+      },
+      "body": "Look into the niches on the outer walls of the sanctuary. Three images of Surya, the Sun god, are carved here in a dark green stone called chlorite. They stand on the south, west and north sides. Surya is shown wearing tall boots, as he often is, and holding lotus flowers, which open with the sun. Tradition links the three images with the sun at different times of day: rising in the morning, high at noon, and setting in the evening.",
+      "tradition": true,
+      "photos": [
+        {
+          "src": "img/surya-1.jpg",
+          "caption": "One of the three Surya images in green chlorite.",
+          "author": "Jayantanth",
+          "licence": "CC BY 3.0",
+          "licenceUrl": "https://creativecommons.org/licenses/by/3.0",
+          "source": "https://commons.wikimedia.org/wiki/File:Konark_Sun_Temple_Statue_of_Sun_God.jpg"
+        },
+        {
+          "src": "img/surya-2.jpg",
+          "caption": "A Surya image in its niche on the sanctuary wall.",
+          "author": "G41rn8",
+          "licence": "CC BY-SA 4.0",
+          "licenceUrl": "https://creativecommons.org/licenses/by-sa/4.0",
+          "source": "https://commons.wikimedia.org/wiki/File:Konark_ei2-26.jpg"
+        }
+      ]
+    },
+    {
+      "id": "fallen-tower",
+      "position": [
+        -60,
+        5.9,
+        11.5
+      ],
+      "view": {
+        "position": [
+          -60.5,
+          4.5,
+          15.5
+        ],
+        "lookAt": [
+          -42,
+          15,
+          0
+        ]
+      },
+      "via": [
+        [
+          -57.5,
+          4.5,
+          16.8
+        ]
+      ],
+      "title": {
+        "en": "The fallen tower"
+      },
+      "body": "Behind the hall stood the deul, the sanctuary that held the image of the god. Its tower may once have risen sixty or seventy metres, high above the hall you see today. Now only its lower walls remain, with the platform on which it stood. By the nineteenth century, the tower lay in ruins. Why it fell is still debated. Some point to weak foundations on sandy ground, others to salt and wind from the sea, to invasion, or to the temple being abandoned. The question remains open.",
+      "photos": [
+        {
+          "src": "img/tower-1.jpg",
+          "caption": "The ruined temple in a tinted lithograph after James Fergusson, 1848.",
+          "author": "James Fergusson / Thomas Colman Dibdin",
+          "licence": "Public domain",
+          "source": "https://commons.wikimedia.org/wiki/File:Konark_Temple_painting_1848_Odisha_in_British_Museum.png"
+        },
+        {
+          "src": "img/tower-2.jpg",
+          "caption": "The temple from the west, over the remains of the deul.",
+          "author": "Pawankumargurav",
+          "licence": "CC BY-SA 4.0",
+          "licenceUrl": "https://creativecommons.org/licenses/by-sa/4.0",
+          "source": "https://commons.wikimedia.org/wiki/File:Back_Side_View_of_Konark_Sun_Temple.jpg"
+        }
+      ]
+    },
+    {
+      "id": "mayadevi",
+      "position": [
+        -58.5,
+        1.6,
+        40.5
+      ],
+      "view": {
+        "position": [
+          -55,
+          0,
+          38
+        ],
+        "lookAt": [
+          -75,
+          2.5,
+          45
+        ]
+      },
+      "via": [
+        [
+          -59.5,
+          4.5,
+          0
+        ],
+        [
+          -70.5,
+          0,
+          0
+        ],
+        [
+          -66,
+          0,
+          24
+        ],
+        [
+          -58,
+          0,
+          37
+        ]
+      ],
+      "title": {
+        "en": "Mayadevi Temple, the older shrine"
+      },
+      "body": "To the south-west of the great temple stand the remains of the Mayadevi temple. It was built in the late eleventh century, which makes it older than the Sun temple itself. It is popularly named after Mayadevi, one of the wives of the Sun god. Yet the images of Surya on its walls suggest that it, too, was a shrine to the Sun. Come closer, and you will find the same kinds of figures you have seen on the great temple, carved on a smaller scale.",
+      "photos": [
+        {
+          "src": "img/mayadevi-1.jpg",
+          "caption": "The Mayadevi temple in its garden, west of the great temple. Its walls stand only to a few metres today.",
+          "author": "Bernard Gagnon",
+          "licence": "CC BY-SA 3.0",
+          "licenceUrl": "https://creativecommons.org/licenses/by-sa/3.0",
+          "source": "https://commons.wikimedia.org/wiki/File:Mayadevi_Temple,_Kon%C3%A2rak_01.jpg"
+        },
+        {
+          "src": "img/mayadevi-2.jpg",
+          "caption": "A standing Surya, the Sun god, carved on its walls: a clue that this too was a Sun shrine.",
+          "author": "Bernard Gagnon",
+          "licence": "CC BY-SA 3.0",
+          "licenceUrl": "https://creativecommons.org/licenses/by-sa/3.0",
+          "source": "https://commons.wikimedia.org/wiki/File:Mayadevi_Temple,_Kon%C3%A2rak_03.jpg"
+        },
+        {
+          "src": "img/mayadevi-3.jpg",
+          "caption": "A makara, the crocodile-like river creature, as a waterspout on its plinth.",
+          "author": "Bernard Gagnon",
+          "licence": "CC BY-SA 3.0",
+          "licenceUrl": "https://creativecommons.org/licenses/by-sa/3.0",
+          "source": "https://commons.wikimedia.org/wiki/File:Mayadevi_Temple,_Kon%C3%A2rak_13_-_Crocodile.jpg"
+        }
+      ]
+    },
+    {
+      "id": "dharmapada",
+      "position": [
+        -82,
+        1.7,
+        -10
+      ],
+      "view": {
+        "position": [
+          -86,
+          0,
+          -14
+        ],
+        "lookAt": [
+          -42,
+          22,
+          0
+        ]
+      },
+      "via": [
+        [
+          -58,
+          0,
+          30
+        ],
+        [
+          -80,
+          0,
+          22
+        ],
+        [
+          -82,
+          0,
+          -8
+        ]
+      ],
+      "title": {
+        "en": "The legend of Dharmapada"
+      },
+      "body": "This is a legend, told and retold in Odisha. It says that twelve hundred artisans worked for twelve years under the master builder, Bisu Maharana. Yet they could not set the crowning stone on top of the tower. The king gave them until dawn to finish, or lose their lives. That night, Bisu's twelve-year-old son, Dharmapada, arrived. He had come looking for the father he had never met. He found the way to set the stone, and the temple was complete. But now the workers feared the king's anger, at being outdone by a boy. So, to save them, Dharmapada climbed to the top of the tower, and leapt into the sea.",
+      "legend": true,
+      "photos": [
+        {
+          "src": "img/dharma-1.jpg",
+          "caption": "Konark drawn on an early 17th-century palm-leaf manuscript, made under the Bhoi dynasty at Khurda.",
+          "author": "Amshpatten",
+          "licence": "CC BY-SA 4.0",
+          "licenceUrl": "https://creativecommons.org/licenses/by-sa/4.0",
+          "source": "https://commons.wikimedia.org/wiki/File:Konark_palm_leaf_manuscript.jpg"
+        }
+      ]
+    }
+  ],
+  "end": {
+    "title": "Then and now",
+    "body": "The gold outline rising from the sanctuary is a conjectural reconstruction of the deul tower, drawn at about 60–70 m — the range historians estimate. Its exact form and height are not known. Below it is the temple as it stands today.",
+    "view": {
+      "position": [
+        32,
+        0,
+        64
+      ],
+      "lookAt": [
+        -30,
+        26,
+        0
+      ]
+    }
+  },
+  "credits": []
+}
