@@ -184,6 +184,11 @@ corrections). Site text overlays: `src/sites/konark/content.<lang>.json`. Needs 
    its hanging roots knotted, wandering and flared at the ground (some in twos and threes),
    its limbs tapered and bent. Shader patches chain through `patch()` in `kit/Trees.tsx`.
    Review any spot with `?stop=1&view=x,z,lookX,lookY,lookZ`.
-   Next: Narasimha, the dance hall, distant views.
+   Round 4, the dance hall: every face of the nata mandir's sixteen pillars carries tiers of
+   dancers and musicians in deep relief, each framed by a ledge, pilasters, a lintel and a small
+   crown (`carvedPillar` in `kit/ratha.ts`), and the pieces that fell from the broken pillars lie
+   about the platform, off the aisles. (Narasimha in the owner's list is the gaja-simha, done in
+   round 1.) Review URLs take a ground height too: `view=x,y,z,lookX,lookY,lookZ`.
+   Next: distant views.
 6. Phone layout for everything.
 7. Other sites (Red Fort, Taj Mahal, Hampi, …) — currently names on the map only.

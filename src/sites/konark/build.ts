@@ -109,7 +109,7 @@ export function buildKonark() {
     for (const x of [-9, -3, 3, 9]) {
       for (const z of [-9, -3, 3, 9]) {
         const h = 0.9 + rand() * 3.4
-        b.group([x, N.h, z], 0, () => carvedPillar(b, h, true, rand))
+        b.group([x, N.h, z], 0, () => carvedPillar(b, h, true, rand, [Math.sign(x), Math.sign(z)]))
       }
     }
   })

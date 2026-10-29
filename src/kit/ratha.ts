@@ -168,8 +168,9 @@ export function warElephant(b: Builder) {
   b.colliderBox([0, 2.5, 0], [3, 2.5, 1.6])
 }
 
-/** A richly carved pillar for the nata mandir: banded shaft with figures, square capital; broken optional. */
-export function carvedPillar(b: Builder, h: number, broken: boolean, rand: () => number) {
+/** A richly carved pillar for the nata mandir: banded shaft with figures, square capital; broken
+ *  optional, its fallen pieces lying off toward `away` (x, z) so the aisles stay clear. */
+export function carvedPillar(b: Builder, h: number, broken: boolean, rand: () => number, away: [number, number] = [1, 0]) {
   b.box('khondalite', [1.9, 0.35, 1.9], [0, 0.17, 0])
   b.box('khondalite', [1.7, 0.25, 1.7], [0, 0.47, 0])
   const shaft = broken ? h : h - 0.8
@@ -180,12 +181,45 @@ export function carvedPillar(b: Builder, h: number, broken: boolean, rand: () =>
     const a = (k * Math.PI) / 2
     b.add('frieze', new THREE.BoxGeometry(0.2, shaft, 0.6), { pos: [Math.cos(a) * 0.72, y0 + shaft / 2, -Math.sin(a) * 0.72], rot: [0, a, 0], uv: { mode: 'frieze', y0: y0 + 0.4, h: Math.min(shaft, 1.6) } })
   }
-  for (const t of [0.3, 0.62]) if (t * shaft < shaft - 0.3) b.box('khondalite', [1.55, 0.18, 1.55], [0, y0 + shaft * t, 0])
+  // the dancers and musicians: on every face, a tier of figures in deep relief, each framed by a
+  // ledge, a lintel and a small stepped crown, one tier above another as far as the shaft stands
+  const TIER = 1.3
+  const tiers = Math.floor((shaft - 0.2) / TIER)
+  for (let k = 0; k < 4; k++) {
+    b.group([0, 0, 0], (k * Math.PI) / 2, () => {
+      for (let j = 0; j < tiers; j++) {
+        const yb = y0 + 0.12 + j * TIER
+        const fh = 0.95
+        b.box('khondalite', [0.2, 0.08, 0.66], [0.86, yb, 0])
+        b.box('recess', [0.04, fh + 0.06, 0.5], [0.83, yb + 0.04 + (fh + 0.06) / 2, 0])
+        for (const sd of [-1, 1]) b.box('khondalite', [0.14, fh + 0.1, 0.07], [0.88, yb + 0.04 + (fh + 0.1) / 2, sd * 0.3])
+        b.box('khondalite', [0.2, 0.08, 0.68], [0.88, yb + fh + 0.18, 0])
+        b.box('khondalite', [0.16, 0.06, 0.46], [0.87, yb + fh + 0.25, 0])
+        const pose = POSES[Math.floor(rand() * POSES.length)]
+        b.add('carved', reliefFigure(pose, fh).clone(), { pos: [0.83, yb + 0.04, 0], rot: [0, (rand() - 0.5) * 0.2, 0] })
+      }
+    })
+  }
+  for (const t of [0.3, 0.62]) if (t * shaft < shaft - 0.3 && tiers === 0) b.box('khondalite', [1.55, 0.18, 1.55], [0, y0 + shaft * t, 0])
   if (!broken) {
     b.box('khondalite', [1.6, 0.35, 1.6], [0, y0 + shaft + 0.17, 0])
     b.box('khondalite', [2.0, 0.3, 2.0], [0, y0 + shaft + 0.5, 0])
   } else {
     b.add('khondalite', new THREE.BoxGeometry(1.0, 0.45, 0.8), { pos: [(rand() - 0.5) * 0.3, y0 + shaft + 0.1, (rand() - 0.5) * 0.3], rot: [rand() * 0.3, rand(), rand() * 0.3] })
+    // what fell from it: carved drums and blocks lying where they came down
+    const n = 1 + Math.floor(rand() * 3)
+    for (let i = 0; i < n; i++) {
+      const a = Math.atan2(away[1], away[0]) + (rand() - 0.5) * 1.3
+      const d = 1.5 + rand() * 1.1
+      const sx = 0.6 + rand() * 0.6
+      const sy = 0.3 + rand() * 0.3
+      const sz = 0.5 + rand() * 0.5
+      const px = Math.cos(a) * d
+      const pz = Math.sin(a) * d
+      const carved = rand() < 0.5
+      b.add(carved ? 'frieze' : 'khondalite', new THREE.BoxGeometry(sx, sy, sz), { pos: [px, sy / 2 - 0.04, pz], rot: [(rand() - 0.5) * 0.25, rand() * Math.PI, (rand() - 0.5) * 0.25], uv: carved ? { mode: 'frieze', y0: 0, h: sy } : undefined })
+      b.colliderBox([px, sy / 2, pz], [sx / 2, sy / 2, sz / 2])
+    }
   }
   b.colliderBox([0, (y0 + shaft) / 2, 0], [0.95, (y0 + shaft) / 2, 0.95])
 }
