@@ -373,7 +373,7 @@ export function palmPlacements(): Palm[] {
 
 /** Vertex-clustering simplification: snap every vertex to a grid of `cell` metres (each cell's
  *  vertices merge to their average), drop triangles that collapse, and keep each one once. */
-export function clusterSimplify(g: THREE.BufferGeometry, cell: number) {
+function clusterSimplify(g: THREE.BufferGeometry, cell: number) {
   const pos = g.attributes.position as THREE.BufferAttribute
   const idx = g.index ? (g.index.array as ArrayLike<number>) : null
   const n = idx ? idx.length : pos.count

@@ -222,4 +222,8 @@ corrections). Site text overlays: `src/sites/konark/content.<lang>.json`. Needs 
    clustered to ~6 cm in the build worker (`scene-low`; lit live, a shade darker); resolution is
    capped at 1.5x (1.25x on a phone) and steps down to 1x when the frame rate falls
    (`PerformanceMonitor` in `Experience.tsx`). Phone frame: 4.1M → 1.6M triangles.
+   Loading: the stone miniature (built when the site opens, needed by the map) leaves the
+   statues out (0.7 s instead of ~7 s); phones sculpt the walk's statues at 2.2x the grain from
+   the start (`setSculptGrain` in kit/sculpt.ts; 1.7 s build, 185k triangles); the map's fonts
+   wait at most 3.5 s; the screen is kept in the address (`?screen=`), so a refresh returns there.
 7. Other sites (Red Fort, Taj Mahal, Hampi, …) — currently names on the map only.

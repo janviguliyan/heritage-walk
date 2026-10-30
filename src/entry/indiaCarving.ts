@@ -231,7 +231,9 @@ const FONTS = CARVE_FONTS
 
 export async function loadCarvingFonts(lang: string) {
   const f = FONTS[lang] ?? FONTS.en
-  await Promise.all([document.fonts.load(`40px ${f.hand}`), document.fonts.load(`600 40px ${f.title}`), document.fonts.load('600 40px "Cormorant Garamond"')]).catch(() => {})
+  // on a slow connection, carve with whatever has arrived after a few seconds rather than wait
+  const fonts = Promise.all([document.fonts.load(`40px ${f.hand}`), document.fonts.load(`600 40px ${f.title}`), document.fonts.load('600 40px "Cormorant Garamond"')]).catch(() => {})
+  await Promise.race([fonts, new Promise((r) => setTimeout(r, 3500))])
 }
 
 export function drawIndia(c: CarveCanvases, lang: string, labels: { title: string; hint: string; soon?: string }): IndiaCarving {

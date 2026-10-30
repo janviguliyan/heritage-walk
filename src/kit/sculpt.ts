@@ -21,6 +21,13 @@ interface Prim {
 
 const len3 = (x: number, y: number, z: number) => Math.sqrt(x * x + y * y + z * z)
 
+/** Coarser sculpture for slow devices (phones): every mesh's cell sizes are multiplied by this,
+ *  so a statue is sculpted at a larger grain from the start (far quicker than simplifying after). */
+let grain = 1
+export function setSculptGrain(k: number) {
+  grain = k
+}
+
 export class Sculpt {
   readonly prims: Prim[] = []
 
@@ -162,6 +169,8 @@ export class Sculpt {
    * plane (e.g. square across a neck, under a band that hides it).
    */
   mesh(cell = 0.04, details: { min: V; max: V; cell: number; plane?: { p: V; n: V } }[] = []) {
+    cell *= grain
+    details = details.map((d) => ({ ...d, cell: d.cell * grain }))
     const boxPrim = (d: { min: V; max: V; plane?: { p: V; n: V } }, by: number): Prim => {
       const min = d.min.map((v) => v - by) as V
       const max = d.max.map((v) => v + by) as V

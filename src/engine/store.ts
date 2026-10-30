@@ -154,3 +154,20 @@ export const commands = {
   moveX: 0,
   moveY: 0,
 }
+
+// a refresh comes back to the same part of the journey: the screen is kept in the address
+// (?screen=…, read by screenParam above), without adding to the browser's history
+if (typeof window !== 'undefined') {
+  let shown = state.screen
+  store.subscribe(() => {
+    const sc = state.screen
+    if (sc === shown) return
+    shown = sc
+    const url = new URL(location.href)
+    if (sc === 'entry') url.searchParams.delete('screen')
+    else url.searchParams.set('screen', sc)
+    // a review link's starting stop belongs to that one visit
+    if (sc !== 'tour') url.searchParams.delete('stop')
+    history.replaceState(history.state, '', url)
+  })
+}

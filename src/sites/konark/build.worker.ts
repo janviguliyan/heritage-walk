@@ -1,31 +1,21 @@
 // Builds Konark off the main thread: the walk's static scene, or the stone miniature.
-import { BufferAttribute, type BufferGeometry } from 'three'
-import { buildKonark, clusterSimplify, konarkMiniature } from './build'
+import { buildKonark, konarkMiniature } from './build'
 import { packGeometry } from '../../kit/transfer'
+import { setSculptGrain } from '../../kit/sculpt'
 
 self.onmessage = (e: MessageEvent<'scene' | 'scene-low' | 'mini'>) => {
   const transfer: Transferable[] = []
   if (e.data === 'mini') {
-    const g = konarkMiniature()
+    // at tablet scale the statues are lumps a few millimetres high: leave them out, and the
+    // miniature builds in well under a second instead of several (it holds up the map)
+    const g = konarkMiniature({ sculpture: false })
     self.postMessage({ kind: 'mini', geo: packGeometry(g, transfer) }, { transfer })
     return
   }
+  // on a phone the sculpture is sculpted at a coarser grain (two million triangles at full detail,
+  // and most of the build's time): its baked light then no longer matches, so it is lit live
+  if (e.data === 'scene-low') setSculptGrain(2.2)
   const b = buildKonark()
-  // on a phone the sculpture (two million triangles at full detail) is clustered to ~6 cm: its
-  // baked light then no longer matches, so it is lit live, as everything is on a phone
-  const low = e.data === 'scene-low'
-  const meshes = [...b.build()].map(([key, g]) => [key, packGeometry(low && key === 'carved#v' ? withUv(clusterSimplify(g, 0.06)) : g, transfer)] as const)
+  const meshes = [...b.build()].map(([key, g]) => [key, packGeometry(g, transfer)] as const)
   self.postMessage({ kind: 'scene', meshes, colliders: b.colliders }, { transfer })
-}
-
-/** texture coordinates for simplified sculpture: the stone's grain from its position */
-function withUv(g: BufferGeometry) {
-  const p = g.attributes.position
-  const uv = new Float32Array(p.count * 2)
-  for (let i = 0; i < p.count; i++) {
-    uv[i * 2] = (p.getX(i) + p.getZ(i)) / 1.2
-    uv[i * 2 + 1] = p.getY(i) / 1.2
-  }
-  g.setAttribute('uv', new BufferAttribute(uv, 2))
-  return g
 }
