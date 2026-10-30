@@ -1,5 +1,5 @@
 import * as THREE from 'three'
-import { figureStatue, gajaSimhaStatue, horseStatue, lionStatue, POSES, reliefFigure, suryaStatue, warElephantStatue, warHorseStatue } from '../kit/statues'
+import { dvarapalaRelief, figureStatue, gajaSimhaStatue, horseStatue, lionStatue, POSES, reliefFigure, suryaStatue, warElephantStatue, warHorseStatue } from '../kit/statues'
 
 // Dev-only: /?sculpt shows every statue in a row, lit simply, for review.
 export function runPreview() {
@@ -61,6 +61,18 @@ export function runPreview() {
     two('gajasimha', () => gajaSimhaStatue(), -0.6)
     cam.position.set(0, 3.4, 19)
     cam.lookAt(0, 3.0, 0)
+  } else if (which === 'door') {
+    // the chamber's door guardian, front on and from the side
+    add('dvarapala', () => dvarapalaRelief(), 0)
+    const front = scene.children[scene.children.length - 1]
+    front.rotation.y = 0
+    front.position.z = -0.7
+    add('dvarapala', () => dvarapalaRelief(), 0)
+    const side = scene.children[scene.children.length - 1]
+    side.rotation.y = Math.PI / 2
+    side.position.z = 0.9
+    cam.position.set(4.6, 1.4, 0.1)
+    cam.lookAt(0, 1.3, 0.1)
   } else if (which === 'closeup') {
     add('horse', () => horseStatue('whole'), 0)
     add('fig', () => figureStatue('mirror'), 2.6, 0.9)

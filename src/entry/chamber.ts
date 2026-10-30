@@ -2,9 +2,10 @@ import * as THREE from 'three'
 import type { Builder } from '../kit/builder'
 import { seeded } from '../engine/textures'
 import { HALL } from './layout'
+import { dvarapalaRelief } from '../kit/statues'
 
 // Scene 2 (Reference 2): a small, dim inner chamber beyond the hall's doorway. Massive dressed
-// blocks with deep joints, a stepped doorway into an inner cell, a generic guardian relief,
+// blocks with deep joints, a stepped doorway into an inner cell, a door guardian in relief,
 // a fluted pilaster, and one thin slit in the roof that drops a shaft of light onto a low
 // stone platform — where the map will appear.
 
@@ -45,36 +46,12 @@ function blockWall(b: Builder, len: number, height: number, rand: () => number, 
   }
 }
 
-/** A generic standing guardian in relief, ~2.1 m, facing local +Z, feet at the origin. */
+/** The door guardian in relief (kit/statues.ts), feet at the origin, facing local +Z, set
+ *  against a dark recess so its silhouette reads in the dim light. */
 function guardian(b: Builder) {
-  const m = 'stone'
-  const add = (g: THREE.BufferGeometry, pos: [number, number, number], rot: [number, number, number] = [0, 0, 0], scale?: [number, number, number]) => b.add(m, g, { pos, rot, scale, uv: { mode: 'world', tile: 1.2 } })
-  // pedestal
-  b.box(m, [0.9, 0.18, 0.32], [0, 0.09, 0.06])
-  // legs, weight on one hip (tribhanga)
-  add(new THREE.CylinderGeometry(0.075, 0.1, 0.85, 10), [-0.1, 0.62, 0.12], [0, 0, 0.08])
-  add(new THREE.CylinderGeometry(0.075, 0.1, 0.85, 10), [0.14, 0.6, 0.12], [0, 0, -0.18])
-  // lower garment, flared, with sashes
-  add(new THREE.CylinderGeometry(0.22, 0.27, 0.42, 14, 1, false, -Math.PI / 2, Math.PI), [0.03, 1.13, 0.06], [0, 0, 0.1], [1, 1, 0.55])
-  add(new THREE.TorusGeometry(0.2, 0.025, 6, 16, Math.PI), [0.03, 1.18, 0.1], [0, 0, Math.PI + 0.1], [1, 0.5, 1])
-  // torso, turned at the waist
-  add(new THREE.CylinderGeometry(0.17, 0.14, 0.5, 12, 1, false, -Math.PI / 2, Math.PI), [-0.02, 1.58, 0.06], [0, 0, -0.08], [1, 1, 0.7])
-  add(new THREE.SphereGeometry(0.17, 12, 8, 0, Math.PI * 2, 0, Math.PI / 2), [-0.04, 1.8, 0.06], [0, 0, -0.08], [1.25, 0.5, 0.7])
-  // necklace
-  add(new THREE.TorusGeometry(0.11, 0.018, 6, 16, Math.PI), [-0.04, 1.76, 0.13], [0, 0, Math.PI], [1, 0.9, 1])
-  // head with a tall crown
-  add(new THREE.SphereGeometry(0.11, 14, 10), [-0.06, 1.98, 0.1], [0, 0, 0], [0.9, 1.1, 0.8])
-  add(new THREE.CylinderGeometry(0.06, 0.11, 0.26, 10), [-0.07, 2.18, 0.08])
-  add(new THREE.SphereGeometry(0.045, 8, 6), [-0.07, 2.33, 0.08])
-  // halo plate behind
-  add(new THREE.CylinderGeometry(0.24, 0.24, 0.04, 20), [-0.06, 2.05, -0.02], [Math.PI / 2, 0, 0])
-  // one arm raised with a flower, one resting on the club/hip
-  add(new THREE.CylinderGeometry(0.04, 0.05, 0.42, 8), [-0.27, 1.84, 0.12], [0, 0, 0.55])
-  add(new THREE.CylinderGeometry(0.035, 0.04, 0.34, 8), [-0.36, 2.1, 0.13], [0, 0, -0.3])
-  add(new THREE.SphereGeometry(0.06, 8, 6), [-0.32, 2.3, 0.14])
-  add(new THREE.CylinderGeometry(0.04, 0.05, 0.45, 8), [0.24, 1.47, 0.12], [0, 0, -0.35])
-  add(new THREE.CylinderGeometry(0.045, 0.06, 1.2, 8), [0.38, 0.75, 0.14], [0, 0, 0.06])
-  add(new THREE.SphereGeometry(0.09, 10, 8), [0.41, 1.36, 0.14])
+  b.box('stone', [0.95, 0.16, 0.34], [0, 0.08, 0.06])
+  b.box('void', [1.05, 2.45, 0.04], [0, 1.3, -0.11])
+  b.add('stone', dvarapalaRelief().clone(), { pos: [0, 0.16, -0.08], rot: [0, -Math.PI / 2, 0], uv: { mode: 'world', tile: 1.2 } })
 }
 
 export function buildChamber(b: Builder) {

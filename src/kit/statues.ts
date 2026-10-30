@@ -536,4 +536,103 @@ export function reliefFigure(pose: FigurePose, h: number) {
   })
 }
 
+/** A dvarapala, the guardian of a temple door, in deep relief: a man in tribhanga, the thrice-bent
+ *  stance, in a pleated dhoti with a looped sash, broad-chested, jewelled, wearing a tall crown and
+ *  great round earrings, a halo behind his head; one hand raises a lotus bud, the other rests on a
+ *  tall club. ~2.1 m, facing +X, flattened front-to-back for a wall. */
+export function dvarapalaRelief() {
+  return once('dvarapala', () => {
+    const f = new Sculpt()
+    const s = 2.1 / 1.75
+    const flat = 0.62
+    const P = (x: number, y: number, z: number): V => [x * s * flat, y * s, z * s]
+    const k = (v: number) => v * s
+    // legs: the weight on the left, the right knee eased forward and in
+    f.chain([P(0.03, 0.05, -0.11), P(0.0, 0.5, -0.1), P(-0.02, 0.93, -0.08)], [k(0.06), k(0.078), k(0.115)], k(0.05))
+    f.chain([P(0.07, 0.05, 0.12), P(0.11, 0.48, 0.09), P(-0.01, 0.94, 0.07)], [k(0.06), k(0.078), k(0.115)], k(0.05))
+    for (const z of [-0.11, 0.12]) {
+      f.ellipsoid(P(0.08, 0.035, z), [k(0.1), k(0.04), k(0.05)], [0, 0, 0], k(0.02))
+      // anklets
+      f.torus(P(0.04, 0.11, z), k(0.06), k(0.014), [0, 0, 0], k(0.006))
+    }
+    // the dhoti: full at the hips, its pleats falling in front between the knees, a hem at the knee
+    f.ellipsoid(P(-0.01, 0.99, 0.0), [k(0.16), k(0.15), k(0.23)], [0.08, 0, 0], k(0.06))
+    for (const z of [-0.06, -0.02, 0.02, 0.06]) f.limb(P(0.12, 0.95, z), P(0.15 + Math.abs(z) * 0.4, 0.42, z * 1.4), k(0.014), k(0.022), k(0.01))
+    for (const z of [-0.1, 0.11]) f.torus(P(0.03, 0.62, z), k(0.085), k(0.012), [0, 0, 0.05], k(0.006))
+    // the sash: a loop over the thighs, its ends falling at the side
+    f.torus(P(0.12, 0.88, 0.0), k(0.17), k(0.02), [0, 0, Math.PI / 2], k(0.01))
+    f.chain([P(0.02, 1.0, -0.22), P(0.04, 0.8, -0.26), P(0.05, 0.55, -0.25)], [k(0.025), k(0.03), k(0.02)], k(0.015))
+    // the jewelled girdle and its clasp
+    f.torus(P(0.0, 1.07, 0.0), k(0.2), k(0.022), [0.08, 0, 0], k(0.01))
+    f.sphere(P(0.17, 1.06, 0.0), k(0.035), k(0.012))
+    // torso: a narrow waist rising to a broad chest and shoulders
+    f.ellipsoid(P(0.0, 1.24, 0.0), [k(0.11), k(0.17), k(0.16)], [0, 0, 0], k(0.06))
+    f.ellipsoid(P(0.0, 1.43, 0.0), [k(0.13), k(0.13), k(0.24)], [0, 0, 0], k(0.06))
+    for (const z of [-1, 1]) {
+      f.ellipsoid(P(0.08, 1.44, 0.085 * z), [k(0.06), k(0.06), k(0.08)], [0, 0, 0], k(0.03))
+      f.sphere(P(0.0, 1.5, 0.23 * z), k(0.075), k(0.04))
+    }
+    // the sacred thread across the chest, a collar of beads and a longer chain with a pendant
+    f.limb(P(0.12, 1.55, -0.18), P(0.13, 1.08, 0.17), k(0.009), k(0.009), k(0.006))
+    f.torus(P(0.02, 1.54, 0.0), k(0.12), k(0.02), [0, 0, -0.3], k(0.008))
+    f.torus(P(0.02, 1.47, 0.0), k(0.17), k(0.011), [0, 0, -0.5], k(0.006))
+    f.ellipsoid(P(0.15, 1.33, 0.0), [k(0.015), k(0.03), k(0.022)], [0, 0, 0], k(0.008))
+    // neck and head, the face turned a little toward the door
+    f.limb(P(0.0, 1.56, 0.0), P(0.0, 1.62, 0.0), k(0.055), k(0.05), k(0.03))
+    const hz = 0.015
+    f.ellipsoid(P(0.015, 1.7, hz), [k(0.085), k(0.105), k(0.082)], [0, 0, 0], k(0.03))
+    for (const z of [-0.03, 0.03]) {
+      // eyes under a heavy brow, full cheeks
+      f.ellipsoid(P(0.092, 1.715, hz + z), [k(0.016), k(0.011), k(0.026)], [0, 0, 0], k(0.006))
+      f.ellipsoid(P(0.1, 1.717, hz + z), [k(0.009), k(0.006), k(0.018)], [0, 0, 0]).cut(k(0.004))
+      f.limb(P(0.09, 1.74, hz + z * 1.7), P(0.096, 1.746, hz + z * 0.25), k(0.011), k(0.008), k(0.004))
+      f.ellipsoid(P(0.07, 1.67, hz + z * 1.5), [k(0.022), k(0.022), k(0.018)], [0, 0, 0], k(0.012))
+      // the great round earrings
+      f.torus(P(0.0, 1.63, hz + 0.09 * Math.sign(z)), k(0.03), k(0.009), [Math.PI / 2, 0, 0], k(0.004))
+    }
+    f.limb(P(0.1, 1.725, hz), P(0.118, 1.678, hz), k(0.012), k(0.018), k(0.006))
+    // a curled moustache over a full mouth, a rounded chin
+    for (const z of [-1, 1]) f.limb(P(0.105, 1.655, hz), P(0.098, 1.66, hz + 0.035 * z), k(0.008), k(0.004), k(0.004))
+    f.ellipsoid(P(0.1, 1.638, hz), [k(0.013), k(0.009), k(0.026)], [0, 0, 0], k(0.005))
+    f.limb(P(0.108, 1.637, hz - 0.02), P(0.108, 1.637, hz + 0.02), k(0.003), k(0.003)).cut(k(0.003))
+    f.sphere(P(0.075, 1.605, hz), k(0.03), k(0.012))
+    // the tall crown (kirita-mukuta): banded, tapering, with a jewelled finial
+    f.limb(P(-0.005, 1.78, hz), P(-0.01, 2.02, hz), k(0.088), k(0.045), k(0.03))
+    for (let i = 0; i < 4; i++) f.torus(P(-0.005, 1.8 + i * 0.055, hz), k(0.088 - i * 0.011), k(0.01), [0, 0, 0], k(0.005))
+    f.sphere(P(-0.01, 2.05, hz), k(0.035), k(0.012))
+    for (const z of [-1, 1]) f.ellipsoid(P(0.0, 1.8, hz + 0.075 * z), [k(0.025), k(0.05), k(0.02)], [0.4 * z, 0, 0], k(0.01))
+    // the halo behind the head, with a beaded rim
+    f.ellipsoid(P(-0.12, 1.78, hz), [k(0.02), k(0.24), k(0.24)], [0, 0, 0], k(0.02))
+    f.torus(P(-0.1, 1.78, hz), k(0.23), k(0.016), [0, 0, Math.PI / 2], k(0.006))
+    // the left arm raised from the elbow, holding a lotus bud up at the shoulder
+    const armlet = (a: V, e: V) => f.torus([(a[0] * 2 + e[0]) / 3, (a[1] * 2 + e[1]) / 3, (a[2] * 2 + e[2]) / 3], k(0.062), k(0.012), [0, 0, 0], k(0.005))
+    {
+      const a = P(0.0, 1.5, -0.24)
+      const e = P(0.07, 1.26, -0.32)
+      const w = P(0.13, 1.5, -0.3)
+      f.chain([a, e, w], [k(0.066), k(0.054), k(0.042)], k(0.03))
+      armlet(a, e)
+      f.torus(w, k(0.042), k(0.01), [0, 0, 0], k(0.005))
+      f.sphere(P(0.14, 1.54, -0.3), k(0.04), k(0.02))
+      f.limb(P(0.14, 1.56, -0.3), P(0.15, 1.7, -0.29), k(0.008), k(0.007), k(0.004))
+      f.ellipsoid(P(0.15, 1.75, -0.29), [k(0.03), k(0.06), k(0.03)], [0, 0, 0], k(0.015))
+      for (const z of [-1, 1]) f.ellipsoid(P(0.15, 1.73, -0.29 + 0.025 * z), [k(0.02), k(0.045), k(0.012)], [0.5 * z, 0, 0], k(0.008))
+    }
+    // the right hand rests on the head of a tall club, its foot on the ground
+    {
+      const a = P(0.0, 1.5, 0.24)
+      const e = P(0.06, 1.24, 0.33)
+      const w = P(0.12, 1.1, 0.37)
+      f.chain([a, e, w], [k(0.066), k(0.054), k(0.042)], k(0.03))
+      armlet(a, e)
+      f.torus(w, k(0.042), k(0.01), [0, 0, 0], k(0.005))
+      f.ellipsoid(P(0.14, 1.07, 0.39), [k(0.045), k(0.035), k(0.045)], [0, 0, 0], k(0.02))
+      f.limb(P(0.14, 0.06, 0.41), P(0.14, 1.0, 0.4), k(0.028), k(0.05), k(0.02))
+      f.ellipsoid(P(0.14, 1.0, 0.4), [k(0.065), k(0.06), k(0.065)], [0, 0, 0], k(0.02))
+      for (const y of [0.3, 0.6, 0.85]) f.torus(P(0.14, y, 0.405), k(0.032 + y * 0.02), k(0.008), [0, 0, 0], k(0.004))
+    }
+    return f.mesh(0.02, [{ min: P(-0.05, 1.58, -0.14), max: P(0.16, 1.86, 0.17), cell: 0.008 }])
+  })
+}
+
 export const POSES: FigurePose[] = ['drum', 'cymbals', 'flute', 'dance', 'mirror', 'veena']
