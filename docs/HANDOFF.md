@@ -216,4 +216,10 @@ corrections). Site text overlays: `src/sites/konark/content.<lang>.json`. Needs 
    or Vercel's `VERCEL_PROJECT_PRODUCTION_URL` (vite.config.ts `siteMeta`).
    Analytics: Vercel Analytics (`<Analytics />` in main.tsx; enable it in the Vercel project),
    with custom events `screen` and `stop_opened` (`engine/actions.ts`).
+   Performance: broadleaf trees beyond ~50 m of the enclosure (and all of them on a phone) use a
+   light crown (450 leaf cards, not 1,700), and the forest is drawn in eight sectors so trees
+   behind the eye are culled (`BroadleafTrees`); phones get lighter shrubs and the sculpture
+   clustered to ~6 cm in the build worker (`scene-low`; lit live, a shade darker); resolution is
+   capped at 1.5x (1.25x on a phone) and steps down to 1x when the frame rate falls
+   (`PerformanceMonitor` in `Experience.tsx`). Phone frame: 4.1M → 1.6M triangles.
 7. Other sites (Red Fort, Taj Mahal, Hampi, …) — currently names on the map only.

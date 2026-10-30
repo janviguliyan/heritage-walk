@@ -1,7 +1,7 @@
-import { Suspense, useEffect } from 'react'
+import { Suspense, useEffect, useState } from 'react'
 import * as THREE from 'three'
 import { Canvas } from '@react-three/fiber'
-import { KeyboardControls } from '@react-three/drei'
+import { KeyboardControls, PerformanceMonitor } from '@react-three/drei'
 import { Physics } from '@react-three/rapier'
 import type { SiteDefinition } from './site'
 import { commands, live, store, useStore } from './store'
@@ -41,6 +41,10 @@ export function Experience({ site, active = true }: { site: SiteDefinition; acti
   const quality = useStore((s) => s.quality)
   const recon = useStore((s) => s.reconstruction)
   const low = quality === 'low'
+  // resolution: up to 1.5x on a desktop's retina screen (2x quadrupled the pixels for every
+  // effect), 1.25x on a phone; and a step down to 1x whenever the frame rate can't keep up
+  const [slow, setSlow] = useState(false)
+  const dpr: [number, number] = slow ? [1, 1] : low ? [1, 1.25] : [1, 1.5]
   const { Scene, Reconstruction } = site
   return (
     <KeyboardControls map={KEYS}>
@@ -49,7 +53,7 @@ export function Experience({ site, active = true }: { site: SiteDefinition; acti
         key={quality}
         frameloop={active ? 'always' : 'never'}
         shadows={low ? false : 'percentage'}
-        dpr={low ? [1, 1.25] : [1, 2]}
+        dpr={dpr}
         // opaque: cut-out leaves leave alpha below 1 in the frame, and a see-through canvas let the
         // page behind show through every leaf, frond and tuft (washing them out)
         gl={{ antialias: low, alpha: false, powerPreference: 'high-performance', preserveDrawingBuffer: SHOT }}
@@ -59,6 +63,7 @@ export function Experience({ site, active = true }: { site: SiteDefinition; acti
           if (SHOT) Object.assign(window, { __gl: gl, __live: live, __store: store, __commands: commands, __scene: scene, __camera: camera, __THREE: THREE })
         }}
       >
+        <PerformanceMonitor flipflops={3} onDecline={() => setSlow(true)} onIncline={() => setSlow(false)} onFallback={() => setSlow(true)} />
         <Suspense fallback={null}>
           <Physics gravity={[0, -9.81, 0]}>
             <Scene low={low} />

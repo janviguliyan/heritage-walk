@@ -58,7 +58,7 @@ export function Overview({ site }: { site: SiteDefinition }) {
 
   // prepare the walk in a background thread while the visitor looks at the model
   useEffect(() => {
-    void import('../sites/konark/buildClient').then((m) => m.sceneData())
+    void import('../sites/konark/buildClient').then((m) => m.sceneData(store.get().quality === 'low'))
   }, [])
   // stop wheels follow the model as the view turns: positions straight to the DOM. Wheels that
   // would overlap fan out around their group, with a leader line to the true spot.

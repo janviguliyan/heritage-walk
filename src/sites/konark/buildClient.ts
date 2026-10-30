@@ -10,7 +10,7 @@ export interface SceneData {
   colliders: ColliderSpec[]
 }
 
-function run<T>(kind: 'scene' | 'mini', read: (d: unknown) => T): Promise<T> {
+function run<T>(kind: 'scene' | 'scene-low' | 'mini', read: (d: unknown) => T): Promise<T> {
   return new Promise((resolve, reject) => {
     const w = new Worker(new URL('./build.worker.ts', import.meta.url), { type: 'module' })
     w.onmessage = (e) => {
@@ -25,14 +25,19 @@ function run<T>(kind: 'scene' | 'mini', read: (d: unknown) => T): Promise<T> {
   })
 }
 
-let scene: Promise<SceneData> | null = null
-/** The walk's static scene: built once per session in the background, then reused. */
-export function sceneData() {
+const scenes = new Map<boolean, Promise<SceneData>>()
+/** The walk's static scene: built once per session in the background, then reused. `low` (phones):
+ *  the sculpture simplified, the rest the same. */
+export function sceneData(low = false) {
+  let scene = scenes.get(low)
   if (!scene)
-    scene = run('scene', (d) => {
+    scenes.set(
+      low,
+      (scene = run(low ? 'scene-low' : 'scene', (d) => {
       const data = d as { meshes: [string, PackedGeometry][]; colliders: ColliderSpec[] }
-      return { meshes: data.meshes.map(([k, p]) => [k, unpackGeometry(p)] as [string, THREE.BufferGeometry]), colliders: data.colliders }
-    })
+        return { meshes: data.meshes.map(([k, p]) => [k, unpackGeometry(p)] as [string, THREE.BufferGeometry]), colliders: data.colliders }
+      })),
+    )
   return scene
 }
 let mini: Promise<THREE.BufferGeometry> | null = null

@@ -570,11 +570,15 @@ function forkedTrunk(limbs: number, seed: number) {
 }
 
 /** Broadleaf trees (mango, neem, jamun): a forked trunk and a clumped crown. Instanced. */
-export function broadleafMeshes(trees: Broadleaf[], low: boolean) {
-    void low // crowns are light enough at one detail level for every quality setting
+/** One broadleaf tree's shapes, built once per detail level. `lite`: a crown of fewer, larger
+ *  leaf cards, for trees seen only from a distance (and every tree on a phone). */
+const broadleafCache = new Map<boolean, { trunkGeo: THREE.BufferGeometry; crownGeo: THREE.BufferGeometry; leafGeo: THREE.BufferGeometry; mats: THREE.MeshStandardMaterial[] }>()
+function broadleafParts(lite: boolean) {
+  let c = broadleafCache.get(lite)
+  if (!c) {
     const trunkGeo = forkedTrunk(3, 2)
     const crownGeo = clumpCrown(3, 8, 1)
-    const leafGeo = leafCards(crownGeo, 1700, 0.22, 5, 0.14)
+    const leafGeo = lite ? leafCards(crownGeo, 450, 0.36, 5, 0.12) : leafCards(crownGeo, 1700, 0.22, 5, 0.14)
     // the crown's mass is the shadowed inside of the tree; the leaf cards make its surface
     crownGeo.scale(0.9, 0.9, 0.9)
     const trunkMat = barkMaterial('#5a4636')
@@ -582,6 +586,15 @@ export function broadleafMeshes(trees: Broadleaf[], low: boolean) {
     const leafMat = leafMaterial()
     addSway(crownMat, 0.012)
     addSway(leafMat, 0.012)
+    broadleafCache.set(lite, (c = { trunkGeo, crownGeo, leafGeo, mats: [trunkMat, crownMat, leafMat] }))
+  }
+  return c
+}
+
+export function broadleafMeshes(trees: Broadleaf[], low: boolean, lite = false) {
+    void low
+    const { trunkGeo, crownGeo, leafGeo, mats } = broadleafParts(lite)
+    const [trunkMat, crownMat, leafMat] = mats
     const t = new THREE.InstancedMesh(trunkGeo, trunkMat, trees.length)
     const c = new THREE.InstancedMesh(crownGeo, crownMat, trees.length)
     const l = new THREE.InstancedMesh(leafGeo, leafMat, trees.length)
@@ -719,22 +732,34 @@ export function BanyanTree({ tree }: { tree: Banyan }) {
   )
 }
 
-export function BroadleafTrees({ trees, low }: { trees: Broadleaf[]; low: boolean }) {
-  const { trunk, crown, leaves } = useMemo(() => broadleafMeshes(trees, low),  [trees, low])
-  useEffect(
-    () => () => {
-      for (const m of [trunk, crown, leaves]) {
-        m.geometry.dispose()
-        ;(m.material as THREE.Material).dispose()
-      }
-    },
-    [trunk, crown, leaves],
-  )
+/** Broadleaf trees, drawn in groups: those near the walk (`near`) keep their dense crowns, the
+ *  rest a lighter one (all of them on a phone); and each set is split into eight sectors round
+ *  the site, so the trees behind the eye are culled instead of drawn. */
+export function BroadleafTrees({ trees, low, near }: { trees: Broadleaf[]; low: boolean; near?: (x: number, z: number) => boolean }) {
+  const meshes = useMemo(() => {
+    const cx = trees.reduce((a, t) => a + t.x, 0) / Math.max(1, trees.length)
+    const cz = trees.reduce((a, t) => a + t.z, 0) / Math.max(1, trees.length)
+    const groups = new Map<string, Broadleaf[]>()
+    for (const t of trees) {
+      const lite = low || !near?.(t.x, t.z)
+      const sector = Math.floor(((Math.atan2(t.z - cz, t.x - cx) + Math.PI) / (Math.PI * 2)) * 8) % 8
+      const k = `${lite ? 1 : 0}-${sector}`
+      let g = groups.get(k)
+      if (!g) groups.set(k, (g = []))
+      g.push(t)
+    }
+    return [...groups.entries()].flatMap(([k, g]) => {
+      const { trunk, crown, leaves } = broadleafMeshes(g, low, k.startsWith('1'))
+      return [trunk, crown, leaves]
+    })
+  }, [trees, low, near])
+  // the shapes and materials are shared and kept for the session; only the instances go
+  useEffect(() => () => meshes.forEach((m) => m.dispose()), [meshes])
   return (
     <>
-      <primitive object={trunk} />
-      <primitive object={crown} />
-      <primitive object={leaves} />
+      {meshes.map((m) => (
+        <primitive key={m.uuid} object={m} />
+      ))}
     </>
   )
 }
@@ -753,11 +778,11 @@ export function shrubMesh(shrubs: Shrub[]) {
 }
 
 /** Shrubs as a dark body under a skin of leaf cards (the body alone is what the bake sees). */
-export function shrubMeshes(shrubs: Shrub[]) {
+export function shrubMeshes(shrubs: Shrub[], low = false) {
     const geo = crownGeometry(1, 3)
     // a clipped mound, settled into the lawn rather than a ball resting on it
     geo.translate(0, 0.6, 0)
-    const leafGeo = leafCards(geo, 900, 0.26, 9, 0.06)
+    const leafGeo = low ? leafCards(geo, 380, 0.36, 9, 0.05) : leafCards(geo, 900, 0.26, 9, 0.06)
     geo.scale(0.9, 0.9, 0.9)
     geo.translate(0, 0.07, 0)
     // the body is the deep shade inside the bush, seen only through gaps in the leaves
@@ -786,8 +811,8 @@ export function shrubMeshes(shrubs: Shrub[]) {
     return { body: m, leaves: l }
 }
 
-export function Shrubs({ shrubs }: { shrubs: Shrub[] }) {
-  const { body, leaves } = useMemo(() => shrubMeshes(shrubs), [shrubs])
+export function Shrubs({ shrubs, low = false }: { shrubs: Shrub[]; low?: boolean }) {
+  const { body, leaves } = useMemo(() => shrubMeshes(shrubs, low), [shrubs, low])
   useEffect(
     () => () => {
       body.geometry.dispose()

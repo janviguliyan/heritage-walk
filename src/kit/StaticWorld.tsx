@@ -146,7 +146,14 @@ export function StaticWorld({ build, data, low, bake, detail, onDispose }: { bui
         const base = mats[mat as keyof typeof mats]
         if (!baked || page === undefined) return base
         // per-vertex light only if it matches this mesh exactly; otherwise live lighting, never black
-        if (page === 'v') return baked.vertex.has(key) && geo(key)?.attributes.bakeV ? bakedMaterial(base, baked.scale, null) : base
+        if (page === 'v') {
+          if (baked.vertex.has(key) && geo(key)?.attributes.bakeV) return bakedMaterial(base, baked.scale, null)
+          // sculpture simplified for a phone no longer matches its baked light: lit live, but a
+          // shade darker, as the bake's shadow and occlusion would have made it beside its stone
+          const m = base.clone() as THREE.MeshStandardMaterial
+          m.color.multiplyScalar(0.72)
+          return m
+        }
         return bakedMaterial(base, baked.scale, baked.pages[Number(page)], baked.sun[Number(page)])
       }),
     [meshes, mats, baked],
