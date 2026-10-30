@@ -108,7 +108,6 @@ function RadialMenu({ site }: { site: SiteDefinition }) {
   const langs = ['en', 'hi', 'or']
   const items: { key: string; icon: string; label: string; on?: boolean; act: () => void; disabled?: boolean }[] = [
     { key: 'map', icon: ICON.map, label: `${t('hud.map')} (M)`, act: () => openMap(), disabled: s.flying },
-    { key: 'next', icon: ICON.next, label: `${t('hud.next')} (N)`, act: () => goToStop(), disabled: s.gliding || s.flying },
     { key: 'sound', icon: s.muted ? ICON.soundOff : ICON.soundOn, label: s.muted ? t('hud.soundOff') : t('hud.soundOn'), on: !s.muted, act: () => store.set({ muted: !s.muted }) },
     { key: 'lang', icon: ICON.lang, label: `${t('lang.label')}: ${s.lang.toUpperCase()}`, act: () => setLanguage(langs[(langs.indexOf(s.lang) + 1) % langs.length]) },
     { key: 'leave', icon: ICON.leave, label: t('hud.leave'), act: leaveTour },
