@@ -3,6 +3,7 @@ import { tx } from './content'
 import { commands, store } from './store'
 import { startNarration, stopNarration } from './narrator'
 import { startAudio } from './audio'
+import { track } from '@vercel/analytics'
 
 let site: SiteDefinition | null = null
 
@@ -26,7 +27,17 @@ export function openHotspot(id: string) {
     visited: s.visited.includes(id) ? s.visited : [...s.visited, id],
   })
   narrate(h.id)
+  track('stop_opened', { stop: h.id, n: i + 1, lang: s.lang })
 }
+
+// how far visitors get: one event each time the journey moves to another screen
+let lastScreen = store.get().screen
+store.subscribe(() => {
+  const sc = store.get().screen
+  if (sc === lastScreen) return
+  lastScreen = sc
+  track('screen', { screen: sc })
+})
 
 function narrate(id: string) {
   const h = hotspots().find((x) => x.id === id)

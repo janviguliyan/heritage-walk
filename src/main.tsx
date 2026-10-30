@@ -1,4 +1,5 @@
 import { StrictMode, Suspense, lazy } from 'react'
+import { Analytics } from '@vercel/analytics/react'
 import { createRoot } from 'react-dom/client'
 import { Journey } from './journey/Journey'
 import { konark } from './sites/konark'
@@ -21,6 +22,8 @@ if (import.meta.env.DEV && new URLSearchParams(location.search).has('bake')) {
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
     <Journey site={konark} />
+    {/* page views, on Vercel (enabled in the project's Analytics tab; does nothing elsewhere) */}
+    <Analytics />
     {Agentation && (
       <Suspense fallback={null}>
         <Agentation />
