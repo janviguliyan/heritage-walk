@@ -1,0 +1,13 @@
+{
+  "name": "Walk India's heritage",
+  "short_name": "Heritage walk",
+  "description": "Walk through Konark Sun Temple in 3D: a narrated stroll round India's stone chariot of the Sun.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#140c07",
+  "theme_color": "#140c07",
+  "icons": [
+    { "src": "/icon-192.png", "sizes": "192x192", "type": "image/png" },
+    { "src": "/icon-512.png", "sizes": "512x512", "type": "image/png" }
+  ]
+}

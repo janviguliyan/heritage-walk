@@ -430,7 +430,7 @@ export function Entry({ face = 'none', paused = false }: { face?: Face; paused?:
         <p>{t('entry.line')}</p>
       </div>
       <div className={`entry-hint${p > 0.02 || !ready || mapOpen ? ' gone' : ''}`} aria-hidden="true">
-        <span>{t('entry.hint')}</span>
+        <span>{t(matchMedia('(pointer: coarse)').matches ? 'entry.hintTouch' : 'entry.hint')}</span>
       </div>
       {!mapOpen && <MuteButton />}
       {!paused && <Loader done={ready} label={t('entry.title')} status={t('entry.loading')} />}

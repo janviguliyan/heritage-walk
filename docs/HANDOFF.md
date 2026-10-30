@@ -204,5 +204,16 @@ corrections). Site text overlays: `src/sites/konark/content.<lang>.json`. Needs 
    glowed pale against the light and half went black (`keepCrownNormals`; the grass tufts too);
    the walk's canvas is opaque. The light bake still has the old casuarina crowns as shadow
    casters (outside the east gate only): re-bake at the next geometry change.
-6. Phone layout for everything.
+6. Phone layout, round 1 (`@media (max-width: 640px)` at the end of `styles.css`, plus
+   `loader.css` and `entry.css`): the walk's story is a bottom sheet (56vh) with its handle on
+   top, the map and compass shrink to the top-left, the joystick hides under an open sheet,
+   the loader's two labels stack, the hall's hint reads "Swipe up to walk in" on touch screens.
+   The hall, the map, the story film and the overview already fit a phone. Still to check on a
+   real device: performance, and the overview's stop pins (clipped at the left edge).
+   SEO and sharing: title, description, Open Graph/X tags with a share image from the story
+   film (`public/og.jpg`), JSON-LD, the wheel favicon (`favicon.svg` and PNGs), a web manifest;
+   `sitemap.xml` and `robots.txt` are written at build. Their absolute URLs come from `SITE_URL`
+   or Vercel's `VERCEL_PROJECT_PRODUCTION_URL` (vite.config.ts `siteMeta`).
+   Analytics: Vercel Analytics (`<Analytics />` in main.tsx; enable it in the Vercel project),
+   with custom events `screen` and `stop_opened` (`engine/actions.ts`).
 7. Other sites (Red Fort, Taj Mahal, Hampi, …) — currently names on the map only.

@@ -67,3 +67,12 @@
     opacity: 0;
   }
 }
+
+/* phones: the site name and the status stack, rather than running into each other */
+@media (max-width: 640px) {
+  .ld-status {
+    top: calc(clamp(20px, 4vh, 40px) + 1.6em);
+    left: clamp(20px, 4vw, 56px);
+    right: auto;
+  }
+}

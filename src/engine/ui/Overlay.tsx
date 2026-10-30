@@ -492,7 +492,7 @@ function Story({ site, h, i }: { site: SiteDefinition; h: Hotspot; i: number }) 
           <span className="tab-name">
             {/* how far the narration has got, round the wheel */}
             <span className="tab-ring" aria-hidden="true">
-              <svg viewBox="0 0 24 24" width={24} height={24}>
+              <svg className="ring" viewBox="0 0 24 24" width={24} height={24}>
                 <circle cx={12} cy={12} r={10.5} className="ring-bg" />
                 <circle cx={12} cy={12} r={10.5} className="ring-fg" pathLength={1} strokeDasharray={`${heard} 1`} transform="rotate(-90 12 12)" />
               </svg>

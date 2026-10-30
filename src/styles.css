@@ -1159,7 +1159,9 @@ body.clean .map-me {
   width: 24px;
   height: 24px;
 }
-.tab-ring svg {
+/* the progress ring fills the box; the wheel inside it is centred by the grid (a bare
+   'svg' selector here pinned the wheel to the corner too) */
+.tab-ring svg.ring {
   position: absolute;
   inset: 0;
 }
@@ -1307,4 +1309,117 @@ button:active:not(:disabled):not(.seg):not(.photo-frame):not(.konark-hot-btn) {
   padding-bottom: 1.4rem;
   scrollbar-width: thin;
   scrollbar-color: rgba(242, 184, 75, 0.35) transparent;
+}
+
+/* ---------- phones: the walk ---------- */
+@media (max-width: 640px) {
+  /* the story rises as a sheet from the bottom edge; the walk stays in view above it */
+  .story-dock {
+    top: auto;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    width: 100%;
+    max-height: 56vh;
+    animation-name: sheet-in;
+  }
+  .story-dock.min {
+    transform: translateY(100%);
+  }
+  .story-dock .story-panel {
+    border-radius: 16px 16px 0 0;
+    border-right: 1px solid rgba(242, 184, 75, 0.22);
+  }
+  /* its handle sits on the sheet's top edge, the stop's name read across */
+  .story-tab {
+    right: auto;
+    top: auto;
+    left: 50%;
+    bottom: 100%;
+    translate: -50% 0;
+    width: auto;
+    max-width: calc(100vw - 32px);
+    min-height: 0;
+    flex-direction: row;
+    padding: 6px 14px;
+    border: 1px solid rgba(242, 184, 75, 0.35);
+    border-bottom: 0;
+    border-radius: 12px 12px 0 0;
+    box-shadow: 0 -6px 16px rgba(0, 0, 0, 0.3);
+  }
+  .story-tab .tab-name {
+    flex-direction: row;
+    gap: 10px;
+    max-height: none;
+    max-width: 100%;
+  }
+  .story-tab .tab-title {
+    writing-mode: horizontal-tb;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    font-size: 0.95rem;
+  }
+  /* the chevron points the way the sheet will go: down to hide it, up to bring it back */
+  .story-tab .tab-chev {
+    rotate: 90deg;
+  }
+  .photo-frame {
+    height: 24vh;
+  }
+  .photo-dots {
+    top: calc(24vh - 20px);
+  }
+  .story-photo figcaption {
+    height: auto;
+    max-height: 3.4em;
+    padding: 8px 16px;
+    font-size: 0.78rem;
+  }
+  .story-photo figcaption .credit {
+    display: none;
+  }
+  .story-text {
+    padding: 4px 16px 12px;
+  }
+  .story-text h2 {
+    font-size: 1.4rem;
+  }
+  .story-text .card-body {
+    font-size: 0.95rem;
+    line-height: 1.55;
+  }
+  .story-player {
+    padding: 10px 14px calc(12px + env(safe-area-inset-bottom));
+  }
+  /* the map and compass: smaller, up under the stop's name, clear of the sheet and the thumb */
+  .minimap {
+    top: 78px;
+    bottom: auto;
+    left: 12px;
+    width: 128px;
+  }
+  .minimap svg {
+    width: 128px;
+    height: 128px;
+  }
+  .hud-left {
+    top: 10px;
+    left: 12px;
+    padding: 6px 12px 7px;
+  }
+  /* no room for the stick above the sheet: lower the sheet (its handle) to walk on */
+  .touch-layer.panel-open .stick {
+    display: none;
+  }
+  .stick {
+    left: 20px;
+    bottom: calc(24px + env(safe-area-inset-bottom));
+    width: 108px;
+    height: 108px;
+  }
+}
+@keyframes sheet-in {
+  from {
+    transform: translateY(100%);
+  }
 }
