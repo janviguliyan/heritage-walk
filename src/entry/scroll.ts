@@ -2,7 +2,7 @@ import { useEffect, useRef } from 'react'
 
 // Scroll that moves the visitor, not the page. Each gesture (one trackpad swipe with its
 // momentum, a quick spin of the wheel, an arrow key, a swipe on touch) moves one step, and
-// three steps reach the chamber; the camera follows with an eased catch-up (see `follow`).
+// four steps reach the chamber; the camera follows with an eased catch-up (see `follow`).
 
 export interface ScrollState {
   target: number
@@ -11,7 +11,7 @@ export interface ScrollState {
   touched: boolean
 }
 
-const STEPS = 3
+const STEPS = 4
 /** a pause this long between wheel events ends a gesture */
 const GAP_MS = 200
 
@@ -86,9 +86,17 @@ export function useScrollDrive(max: number, enabled = true) {
   return s
 }
 
-/** Ease `current` toward `target` (frame-rate independent); calmer when motion is reduced. */
+/** the most the walk moves in a second: a step takes about a second at least, an unhurried pace */
+const MAX_SPEED = 0.5
+
+/** Ease `current` toward `target` (frame-rate independent), never faster than a walking pace;
+ *  calmer when motion is reduced. */
 export function follow(s: ScrollState, dt: number, reduced: boolean) {
-  const k = 1 - Math.exp(-dt * (reduced ? 5 : 2.4))
-  s.current += (s.target - s.current) * k
+  const k = 1 - Math.exp(-dt * (reduced ? 5 : 1.4))
+  const gap = s.target - s.current
+  const move = gap * k
+  // a scroll step walks; a long jump (back to the start from the map) may hurry
+  const cap = Math.abs(gap) > 0.6 ? MAX_SPEED * 2.5 : MAX_SPEED
+  s.current += reduced ? move : Math.sign(move) * Math.min(Math.abs(move), cap * dt)
   if (Math.abs(s.target - s.current) < 1e-4) s.current = s.target
 }
