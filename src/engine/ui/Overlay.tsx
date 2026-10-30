@@ -509,7 +509,9 @@ function Story({ site, h, i }: { site: SiteDefinition; h: Hotspot; i: number }) 
         </button>
         <div className="story-panel" inert={min}>
           {p && (
-            <figure key={h.id} className="story-photo swap">
+            // photo and text each re-mount per stop (to play their settle-in), under keys of their own:
+            // sharing the stop id as a key confused React into keeping the old photo and losing the text
+            <figure key={`photo-${h.id}`} className="story-photo swap">
               <button className="photo-frame" onClick={() => setZoomed(true)} aria-label="Enlarge photo">
                 {h.photos.map((ph, k) => (
                   <img key={ph.src} src={site.assetBase + ph.src} alt={tx(ph.caption, lang)} className={k === photo ? 'on' : ''} />
@@ -543,7 +545,7 @@ function Story({ site, h, i }: { site: SiteDefinition; h: Hotspot; i: number }) 
             </figure>
           )}
           <div
-            key={h.id}
+            key={`text-${h.id}`}
             ref={textRef}
             className="story-text swap"
             onWheel={() => (scrolledAt.current = performance.now())}

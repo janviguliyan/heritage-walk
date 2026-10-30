@@ -4,7 +4,7 @@ import raw from './content.json'
 import { lazy } from 'react'
 import { KonarkPlan } from './Plan'
 import { KonarkStoryArt } from './StoryArt'
-import { plan2d } from './layout'
+import { LAWNS, LAYOUT, plan2d } from './layout'
 
 // translations live beside the English content, one file per language: content.<lang>.json
 const overlays = Object.fromEntries(
@@ -31,4 +31,13 @@ export const konark: SiteDefinition = {
   },
   assetBase: '/sites/konark/',
   plan2d: plan2d(),
+  // underfoot: the temple's raised platforms, the paved court and the approach, else lawn
+  surface: (x, z, y) => {
+    if (y > 0.6) return 'stone'
+    if (LAWNS.some(([x0, z0, x1, z1]) => x > x0 && x < x1 && z > z0 && z < z1)) return 'grass'
+    const E = LAYOUT.enclosure
+    const inside = x > E.x0 && x < E.x1 && z > E.z0 && z < E.z1
+    const approach = x >= E.x1 - 2 && x < E.x1 + 42 && Math.abs(z) < 4.5
+    return inside || approach ? 'paving' : 'grass'
+  },
 }

@@ -274,7 +274,7 @@ function Rig({ scroll, onEnd }: { scroll: React.RefObject<ScrollState>; onEnd: (
     st.z = pos.z
     if (st.acc > 0.85) {
       st.acc = 0
-      if (s.touched) footstep(true, false)
+      if (s.touched) footstep('stone', false)
     }
     if (s.touched && !store.get().muted) startAudio(ENTRY_AUDIO)
     // past the doorway: on to the next scene

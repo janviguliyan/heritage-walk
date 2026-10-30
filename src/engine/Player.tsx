@@ -329,7 +329,7 @@ export function Player({ site }: { site: SiteDefinition }) {
     v.stride += moved
     if (v.stride > (run ? 1.1 : 0.8)) {
       v.stride = 0
-      footstep(ny - CENTER > 0.6, run)
+      footstep(site.surface?.(nx, nz, ny - CENTER) ?? (ny - CENTER > 0.6 ? 'stone' : 'paving'), run)
     }
   })
 

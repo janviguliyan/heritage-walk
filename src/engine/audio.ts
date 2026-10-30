@@ -181,24 +181,71 @@ export function updateAudio(t: number) {
   reverbSend.gain.setTargetAtTime(Math.max(0, wet) * 0.6, ctx.currentTime, 0.3)
 }
 
-export function footstep(stone: boolean, running: boolean) {
+/** What is underfoot, for the sound of a step. */
+export type FootSurface = 'stone' | 'paving' | 'grass'
+
+/**
+ * One footstep, synthesised for the surface: a heel strike and a scuff, each a short burst of
+ * filtered noise. Broad, low-Q filters and a little randomness in every step keep it from ringing
+ * (a single sharp filter on white noise, with the halls' reverb, made steps sound like metal).
+ * Only the temple's platforms send to the reverb: out on the court and the lawns it is open air.
+ */
+export function footstep(surface: FootSurface, running: boolean) {
   if (!ctx) return
-  const now = ctx.currentTime
-  const src = ctx.createBufferSource()
-  const len = 0.12
-  const buf = ctx.createBuffer(1, ctx.sampleRate * len, ctx.sampleRate)
-  const d = buf.getChannelData(0)
-  for (let i = 0; i < d.length; i++) d[i] = (Math.random() * 2 - 1) * (1 - i / d.length) ** (stone ? 6 : 2)
-  src.buffer = buf
-  const f = ctx.createBiquadFilter()
-  f.type = stone ? 'lowpass' : 'highpass'
-  f.frequency.value = stone ? 900 + Math.random() * 300 : 1800 + Math.random() * 800
-  const g = ctx.createGain()
-  g.gain.value = (stone ? 0.5 : 0.18) * (running ? 1.2 : 1)
-  src.connect(f).connect(g)
-  g.connect(ambience)
-  g.connect(reverbSend)
-  src.start(now)
+  const c = ctx
+  const now = c.currentTime
+  const out = c.createGain()
+  out.gain.value = running ? 1.15 : 1
+  out.connect(ambience)
+  if (surface === 'stone') {
+    const send = c.createGain()
+    send.gain.value = 0.35
+    out.connect(send).connect(reverbSend)
+  }
+  const jitter = (v: number, k = 0.15) => v * (1 + (Math.random() * 2 - 1) * k)
+  /** a burst: `len` s long, rising over `attack` (fraction), falling with `fall`; `grit` adds
+   *  sparse crackles (grass blades, grains); filtered `type` at `freq`, gentle Q */
+  const burst = (len: number, attack: number, fall: number, grit: number, type: BiquadFilterType, freq: number, gain: number, delay = 0) => {
+    const n = Math.floor(c.sampleRate * len)
+    const buf = c.createBuffer(1, n, c.sampleRate)
+    const d = buf.getChannelData(0)
+    let brown = 0
+    for (let i = 0; i < n; i++) {
+      const t = i / n
+      const env = t < attack ? t / attack : Math.pow(1 - (t - attack) / (1 - attack), fall)
+      brown = brown * 0.9 + (Math.random() * 2 - 1) * 0.1
+      const w = Math.random() * 2 - 1
+      const crackle = grit > 0 && Math.random() < grit ? (Math.random() < 0.5 ? -1 : 1) * (0.6 + Math.random() * 0.4) : 0
+      d[i] = (w * 0.5 + brown * 2.5 + crackle * 1.6) * env
+    }
+    const src = c.createBufferSource()
+    src.buffer = buf
+    const f = c.createBiquadFilter()
+    f.type = type
+    f.frequency.value = jitter(freq)
+    f.Q.value = 0.5
+    const g = c.createGain()
+    g.gain.value = jitter(gain, 0.2)
+    src.connect(f).connect(g).connect(out)
+    src.start(now + delay)
+  }
+  switch (surface) {
+    case 'grass':
+      // a soft swish of blades and a muffled heel
+      burst(0.24, 0.18, 1.5, 0.006, 'bandpass', 2400, 0.22)
+      burst(0.1, 0.08, 2.5, 0, 'lowpass', 260, 0.12)
+      break
+    case 'paving':
+      // a dull heel on the flags, then the gritty scuff of the sole
+      burst(0.08, 0.04, 3.5, 0, 'lowpass', 480, 0.42)
+      burst(0.12, 0.2, 2.2, 0.004, 'bandpass', 1900, 0.09, 0.012)
+      break
+    case 'stone':
+      // the carved platforms: a firmer, drier tap, a little grit
+      burst(0.07, 0.03, 4.5, 0, 'lowpass', 380, 0.5)
+      burst(0.07, 0.15, 3, 0.003, 'bandpass', 2600, 0.06, 0.008)
+      break
+  }
 }
 
 function chirp(at: number) {

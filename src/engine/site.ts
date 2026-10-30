@@ -1,6 +1,6 @@
 import type { ComponentType } from 'react'
 import type { Hotspot, SiteContent } from './content'
-import type { AudioZones } from './audio'
+import type { AudioZones, FootSurface } from './audio'
 
 export interface SitePlanProps {
   hotspots: Hotspot[]
@@ -27,6 +27,8 @@ export interface SiteDefinition {
   audio: AudioZones
   /** public path for this site's audio/images */
   assetBase: string
+  /** what is underfoot at (x, z), feet at height y: for the sound of each step */
+  surface?: (x: number, z: number, y: number) => FootSurface
   /** flat shapes of the site for the corner map */
   plan2d?: { areas: [number, number, number, number, string][] }
 }
