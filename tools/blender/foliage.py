@@ -2,6 +2,7 @@
 
   leaf      a cluster of folded, pointed leaves on twigs (broadleaf trees, shrubs, banyan)
   needle    casuarina needles: fine jointed strands falling from a twig
+  branchlet a casuarina tuft: fine jointed branchlets hanging from a twig
   frond     a coconut palm frond: midrib and drooping leaflets
   tuft      a tuft of grass blades seen from the side (the 3D grass on the lawns)
   lawn      a mown lawn, 250,000 blades on a seamless 5 m tile, seen from above
@@ -289,6 +290,58 @@ def needle():
     render("needle")
 
 
+def branchlet():
+    """A casuarina tuft: a twig across the top, and from it hundreds of fine jointed branchlets
+    (the 'needles') hanging and fanning out below. Near-white, tinted in the walk."""
+    # card 2 wide by 3 tall: x in [-1, 1], y in [-1.5, 1.5]
+    reset(512, 768, 3.0, 0.12)
+    camera((0, 0), 3.0)
+    rng = np.random.default_rng(61)
+    m = Mesh()
+    # the twig: an arc across the top, from which the branchlets hang
+    nodes = 14
+    tt = np.linspace(0, 1, nodes)
+    tx = -0.75 + 1.5 * tt
+    ty = 1.32 - 0.25 * (2 * tt - 1) ** 2
+    rows = 18
+    strands = []
+    for i in range(nodes):
+        for _ in range(rng.integers(14, 22)):
+            L = rng.uniform(0.7, 2.3) * (0.7 + 0.3 * np.sin(np.pi * tt[i]))
+            spread = rng.normal(0, 0.22) + (tt[i] - 0.5) * 0.5
+            t = np.linspace(0, 1, rows)
+            x = tx[i] + rng.normal(0, 0.03) + spread * L * t ** 1.3 + rng.normal(0, 0.01) * np.sin(t * 9)
+            y = ty[i] - L * t * (0.9 + 0.1 * t)
+            z = rng.uniform(-0.25, 0.25) * t
+            # jointed: a little narrower at each joint, and tapering to the tip
+            w = rng.uniform(0.0045, 0.007) * (1 - 0.55 * t) * (1 - 0.3 * (np.abs(np.sin(t * L * 40)) < 0.2))
+            if np.any(np.abs(x) > 0.98) or np.any(y < -1.48):
+                keep = (np.abs(x) < 0.98) & (y > -1.48)
+                n = max(2, int(np.argmin(keep)) if not keep.all() else rows)
+                x, y, z, w, t = x[:n], y[:n], z[:n], w[:n], t[:n]
+                if n < 3:
+                    continue
+            strands.append((x, y, z, w, t))
+    for x, y, z, w, t in strands:
+        pts = np.zeros((1, len(x), 2, 3))
+        for k, sg in enumerate((-1, 1)):
+            pts[0, :, k, 0] = x + w * sg
+            pts[0, :, k, 1] = y
+            pts[0, :, k, 2] = z
+        lum = rng.uniform(0.62, 1.0) * (1 - 0.18 * t)
+        col = srgb_to_lin(np.clip(np.stack([lum * 0.93, lum, lum * 0.9], -1), 0, 1))
+        m.strips(pts, np.repeat(col[None, :, None, :], 2, 2))
+    # the twig itself, a shade darker and browner
+    tw = np.zeros((1, nodes, 2, 3))
+    for k, sg in enumerate((-1, 1)):
+        tw[0, :, k, 0] = tx
+        tw[0, :, k, 1] = ty + sg * 0.012
+        tw[0, :, k, 2] = 0.3
+    m.strips(tw, np.broadcast_to(srgb_to_lin([0.55, 0.5, 0.42]), (1, nodes, 2, 3)).copy())
+    m.object("branchlet")
+    render("branchlet")
+
+
 def frond():
     """A coconut frond seen from above, base at the bottom: a stiff midrib with ~70 leaflets a
     side, longest at the middle, angled forward and drooping (shading from occlusion)."""
@@ -413,7 +466,7 @@ def lawn():
 
 def main():
     argv = sys.argv[sys.argv.index("--") + 1:] if "--" in sys.argv else []
-    which = argv or ["leaf", "needle", "frond", "tuft", "lawn"]
+    which = argv or ["leaf", "needle", "branchlet", "frond", "tuft", "lawn"]
     for w in which:
         globals()[w]()
 

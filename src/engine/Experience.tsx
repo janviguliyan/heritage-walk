@@ -50,7 +50,9 @@ export function Experience({ site, active = true }: { site: SiteDefinition; acti
         frameloop={active ? 'always' : 'never'}
         shadows={low ? false : 'percentage'}
         dpr={low ? [1, 1.25] : [1, 2]}
-        gl={{ antialias: low, powerPreference: 'high-performance', preserveDrawingBuffer: SHOT }}
+        // opaque: cut-out leaves leave alpha below 1 in the frame, and a see-through canvas let the
+        // page behind show through every leaf, frond and tuft (washing them out)
+        gl={{ antialias: low, alpha: false, powerPreference: 'high-performance', preserveDrawingBuffer: SHOT }}
         camera={{ fov: 70, near: 0.1, far: 6000 }}
         aria-label={site.content.name.en}
         onCreated={({ gl, scene, camera }) => {

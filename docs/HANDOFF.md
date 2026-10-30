@@ -197,5 +197,12 @@ corrections). Site text overlays: `src/sites/konark/content.<lang>.json`. Needs 
    walk's own fog at each pixel's true distance (`kit/Horizon.tsx`); the morning haze thinned so
    tree lines show. Light re-baked for the carved pillars. Renders and bakes run at low priority
    (`nice -n 20`): the owner's laptop heats up under them.
+   Round 6: casuarinas rebuilt as the coastal plantation trees are (a straight trunk, 24 thin
+   branches spiralling up it, each hung with tufts of drooping branchlets rendered in Blender:
+   `branchlet` in foliage.py), an open crown built at 17 m and scaled per tree. Fixed for all
+   foliage: two-sided cards had their normal flipped on the back face, so half of every crown
+   glowed pale against the light and half went black (`keepCrownNormals`; the grass tufts too);
+   the walk's canvas is opaque. The light bake still has the old casuarina crowns as shadow
+   casters (outside the east gate only): re-bake at the next geometry change.
 6. Phone layout for everything.
 7. Other sites (Red Fort, Taj Mahal, Hampi, …) — currently names on the map only.

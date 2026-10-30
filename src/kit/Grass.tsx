@@ -156,6 +156,8 @@ function tuftMaterial(lm: THREE.Texture, sun: THREE.Texture, scale: number) {
     shader.fragmentShader = shader.fragmentShader
       .replace('#include <common>', `#include <common>\n${GROUND_GLSL}\nuniform float uLmScale;\nuniform sampler2D uLm;\nuniform sampler2D uSun;\nvarying vec2 vLmUv;`)
       .replace('#include <map_fragment>', `#include <map_fragment>\n${LAWN_TINT}`)
+      // lit as the lawn is, from either side of the card (three would turn the normal down on the back)
+      .replace('#include <normal_fragment_begin>', THREE.ShaderChunk.normal_fragment_begin.replace('normal *= faceDirection;', ''))
       .replace(
         '#include <lights_fragment_end>',
         `#include <lights_fragment_end>

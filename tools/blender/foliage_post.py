@@ -64,7 +64,7 @@ def save(arr, path, q, alpha=False):
 
 def main():
     os.makedirs(FOL, exist_ok=True)
-    for name in ("leaf", "needle", "frond", "tuft"):
+    for name in ("leaf", "needle", "branchlet", "frond", "tuft"):
         c = load(f"{name}-albedo.png")
         a = c[..., 3]
         rgb = bleed(c[..., :3].copy(), a)

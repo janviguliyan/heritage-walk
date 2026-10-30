@@ -142,37 +142,6 @@ function leafTexture() {
   return t
 }
 
-/** Casuarina needles: fine strands falling from a twig, on transparency (drawn once, no photos). */
-let needleTex: THREE.Texture | null = null
-function needleTexture() {
-  if (needleTex) return needleTex
-  if (typeof document === 'undefined') return null
-  const W = 256
-  const H = 128
-  const c = document.createElement('canvas')
-  c.width = W
-  c.height = H
-  const g = c.getContext('2d')!
-  const rand = seededRand(29)
-  for (let i = 0; i < 260; i++) {
-    const x0 = rand() * W
-    const len = H * (0.45 + rand() * 0.5)
-    const sway = (rand() - 0.5) * 30
-    const l = Math.round(150 + rand() * 100)
-    g.strokeStyle = `rgba(${l - 20},${l},${l - 25},${0.75 + rand() * 0.25})`
-    g.lineWidth = 0.8 + rand() * 0.9
-    g.beginPath()
-    g.moveTo(x0, 2 + rand() * 10)
-    g.quadraticCurveTo(x0 + sway * 0.3, len * 0.5, x0 + sway, len)
-    g.stroke()
-  }
-  const t = new THREE.CanvasTexture(c)
-  t.colorSpace = THREE.SRGBColorSpace
-  t.anisotropy = 4
-  needleTex = upgradeTexture(t, 'needle-albedo.webp')
-  return t
-}
-
 /** Leaf cards over a crown's surface, facing outward, so the silhouette breaks into foliage.
  *  Normals lean out from the surface for soft, rounded light; colours keep the crown's shading. */
 function leafCards(base: THREE.BufferGeometry, count: number, size: number, seed: number, scatter = 0) {
@@ -266,12 +235,28 @@ function leafCards(base: THREE.BufferGeometry, count: number, size: number, seed
 }
 
 let leafNrm: THREE.Texture | null = null
-let needleNrm: THREE.Texture | null = null
 function leafMaterial() {
   leafNrm ??= flatNormal('leaf-normal.webp')
   const m = new THREE.MeshStandardMaterial({ map: leafTexture(), normalMap: leafNrm, normalScale: new THREE.Vector2(0.8, 0.8), alphaTest: 0.5, side: THREE.DoubleSide, vertexColors: true, roughness: 0.75 })
-  // cut-out leaves thin away as the texture shrinks into its smaller mipmaps (the crowns go vague
-  // at a distance): raise the coverage with the mip level, so a crown stays as full as up close
+  addCoverage(m)
+  keepCrownNormals(m)
+  return m
+}
+
+/** Foliage cards are two-sided, with soft normals leaning out from the crown. three.js turns the
+ *  normal round on a card's back face, which on half the cards points it into the crown and at
+ *  the sun behind it: seen against the light they glowed pale, the rest went black. Keep the
+ *  crown's own normal on both faces. */
+function keepCrownNormals(m: THREE.Material) {
+  patch(m, 'crown-normals', (s) => {
+    s.fragmentShader = s.fragmentShader.replace('#include <normal_fragment_begin>', THREE.ShaderChunk.normal_fragment_begin.replace('normal *= faceDirection;', ''))
+  })
+}
+
+/** Cut-out leaves and needles thin away as their texture shrinks into its smaller mipmaps (crowns
+ *  go vague at a distance): raise the coverage with the mip level, so a crown stays as full as up
+ *  close. */
+function addCoverage(m: THREE.MeshStandardMaterial) {
   patch(m, 'leaf-coverage', (s) => {
     s.fragmentShader = s.fragmentShader.replace(
       '#include <alphatest_fragment>',
@@ -283,7 +268,6 @@ function leafMaterial() {
       #include <alphatest_fragment>`,
     )
   })
-  return m
 }
 
 // Wind sway for a single (non-instanced) mesh: a gentle bend by height.
@@ -417,55 +401,80 @@ function shapeCylinder(g: THREE.BufferGeometry, f: (a: number, t: number) => [nu
   return g
 }
 
-/** Casuarinas: a tall slim trunk and wispy, drooping plumes of grey-green needles, loosely
- *  stacked up the upper trunk (not a cone). Instanced, wind-swayed. */
+/** Casuarinas, as they stand in the plantations along the Odisha coast: a tall straight trunk with
+ *  thin branches spiralling up it, rising and spreading, each hung with tufts of fine drooping
+ *  branchlets (a tuft rendered in Blender, tools/blender/foliage.py) — an open, see-through crown,
+ *  narrowing toward the top. Built at 17 m and scaled to each tree. Instanced, wind-swayed. */
+const CAS_H = 17
+let branchletTex: THREE.Texture | null = null
+let branchletNrm: THREE.Texture | null = null
 export function casuarinaMeshes(trees: TreePlacement[]) {
-    const trunkGeo = new THREE.CylinderGeometry(0.06, 0.18, 1, 6)
-    trunkGeo.translate(0, 0.5, 0)
-    // plumes of fine, drooping needles: pairs of crossed cards hung around the upper trunk,
-    // smaller toward the top, each tilted out and down
-    const plumes: THREE.BufferGeometry[] = []
     const rand = seededRand(5)
-    for (let i = 0; i < 26; i++) {
-      const y = 0.4 + (i / 26) * 0.56 + rand() * 0.03
-      const up = (y - 0.4) / 0.56
-      const w = (0.36 - up * 0.2) * (0.8 + rand() * 0.4)
-      const h = 0.14 + rand() * 0.08
-      const a = rand() * Math.PI * 2
-      const out = (1 - up) * 0.18 + 0.04
+    const wood: THREE.BufferGeometry[] = []
+    const trunk = new THREE.CylinderGeometry(0.1, 0.26, CAS_H, 7, 6)
+    trunk.translate(0, CAS_H / 2, 0)
+    wood.push(trunk)
+    const tufts: THREE.BufferGeometry[] = []
+    const tuft = (p: THREE.Vector3, w: number) => {
+      const yaw = rand() * Math.PI
+      const out = new THREE.Vector3(p.x, 0, p.z)
+      if (out.lengthSq() < 1e-4) out.set(Math.cos(yaw), 0, Math.sin(yaw))
+      out.normalize()
       for (const turn of [0, Math.PI / 2]) {
+        const h = w * 1.5
         const g = new THREE.PlaneGeometry(w, h)
-        g.translate(0, -h * 0.35, 0)
-        g.rotateX(0.35) // lean out and droop
-        g.rotateY(a + turn)
-        // normals out from the trunk, for soft light all round
+        // the twig runs along the card's top edge, at the branch
+        g.translate(0, -h / 2 + 0.25, 0)
+        g.rotateX((rand() - 0.5) * 0.3)
+        g.rotateY(yaw + turn)
+        // normals out from the trunk and up, for soft light all round the crown
         const n = g.attributes.normal
-        for (let k = 0; k < n.count; k++) n.setXYZ(k, Math.cos(a + turn) * 0.6, 0.55, -Math.sin(a + turn) * 0.6)
-        g.translate(Math.cos(a) * out, y, Math.sin(a) * out)
-        plumes.push(g.toNonIndexed())
+        for (let k = 0; k < n.count; k++) n.setXYZ(k, out.x * 0.7, 0.55, out.z * 0.7)
+        g.translate(p.x, p.y, p.z)
+        tufts.push(g.toNonIndexed())
       }
     }
-    const foliageGeo = mergeGeometries(plumes)!
+    const branches = 24
+    for (let i = 0; i < branches; i++) {
+      const t = 0.36 + (i / (branches - 1)) * 0.58
+      const a = i * 2.39996 + rand() * 0.4
+      const e = 0.55 + rand() * 0.4
+      const len = Math.pow(1 - (t - 0.36) / 0.62, 0.7) * 4.2 + 0.9 + rand() * 0.8
+      const d = new THREE.Vector3(Math.cos(a) * Math.cos(e), Math.sin(e), Math.sin(a) * Math.cos(e))
+      const base = new THREE.Vector3(0, t * CAS_H, 0)
+      const g = new THREE.CylinderGeometry(0.025, 0.07, len, 5)
+      g.translate(0, len / 2, 0)
+      g.applyQuaternion(new THREE.Quaternion().setFromUnitVectors(new THREE.Vector3(0, 1, 0), d))
+      g.translate(base.x, base.y, base.z)
+      wood.push(g.toNonIndexed())
+      const n = 3 + Math.floor(rand() * 3)
+      for (let k = 0; k < n; k++) {
+        const f = 0.3 + (k / (n - 1)) * 0.7
+        tuft(base.clone().addScaledVector(d, len * f), 1.1 + rand() * 0.9)
+      }
+    }
+    // and a few at the leader, so the crown ends in a soft point
+    for (let k = 0; k < 3; k++) tuft(new THREE.Vector3((rand() - 0.5) * 0.5, CAS_H + 0.6 - k * 0.5, (rand() - 0.5) * 0.5), 1.0 + rand() * 0.5)
+    const trunkGeo = mergeGeometries(wood.map((g) => (g.index ? g.toNonIndexed() : g)))!
+    const foliageGeo = mergeGeometries(tufts)!
     const trunkMat = barkMaterial('#6a5646')
-    needleNrm ??= flatNormal('needle-normal.webp')
-    // casuarina needles are a dull grey-green. (The colour sits on the material: these cards have no
-    // vertex colours, and without them the per-instance tint never reached the fragment, leaving
-    // the near-white needle texture untinted.)
-    needleNrm ??= flatNormal('needle-normal.webp')
-    const foliageMat = new THREE.MeshStandardMaterial({ map: needleTexture(), normalMap: needleNrm, normalScale: new THREE.Vector2(0.6, 0.6), alphaTest: 0.4, color: '#3a4430', roughness: 0.95, side: THREE.DoubleSide })
-    addSway(trunkMat, 0.004)
-    addSway(foliageMat, 0.6)
+    // a dull grey-green (on the material: these cards have no vertex colours)
+    branchletTex ??= solidTexture('#00000000', 'branchlet-albedo.webp')
+    branchletNrm ??= flatNormal('branchlet-normal.webp')
+    const foliageMat = new THREE.MeshStandardMaterial({ map: branchletTex, normalMap: branchletNrm, normalScale: new THREE.Vector2(0.5, 0.5), alphaTest: 0.4, color: '#3d4733', roughness: 0.95, side: THREE.DoubleSide })
+    addCoverage(foliageMat)
+    keepCrownNormals(foliageMat)
+    addSway(trunkMat, 0.0025)
+    addSway(foliageMat, 0.0025)
     const t = new THREE.InstancedMesh(trunkGeo, trunkMat, trees.length)
     const f = new THREE.InstancedMesh(foliageGeo, foliageMat, trees.length)
     const o = new THREE.Object3D()
     trees.forEach((tr, i) => {
       o.position.set(tr.x, 0, tr.z)
       o.rotation.set(0, (tr.x * 13.1 + tr.z * 7.7) % (Math.PI * 2), 0)
-      o.scale.set(tr.h * 0.12, tr.h, tr.h * 0.12)
+      o.scale.setScalar(tr.h / CAS_H)
       o.updateMatrix()
       t.setMatrixAt(i, o.matrix)
-      o.scale.set(tr.h * 0.4, tr.h, tr.h * 0.4)
-      o.updateMatrix()
       f.setMatrixAt(i, o.matrix)
     })
     for (const m of [t, f]) {
@@ -866,6 +875,7 @@ export function palmMeshes(palms: Palm[]) {
     frondTex ??= solidTexture('#5b7a2e', 'frond-albedo.webp')
     frondNrm ??= flatNormal('frond-normal.webp')
     const fm = new THREE.MeshStandardMaterial({ map: frondTex, normalMap: frondNrm, normalScale: new THREE.Vector2(0.7, 0.7), alphaTest: 0.5, roughness: 0.8, side: THREE.DoubleSide })
+    keepCrownNormals(fm)
     addSway(fm, 0.05)
     const f = new THREE.InstancedMesh(frondGeo, fm, palms.length)
     const o = new THREE.Object3D()
