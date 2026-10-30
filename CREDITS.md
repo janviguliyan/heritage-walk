@@ -183,3 +183,9 @@ Leaf clusters, casuarina needles, coconut fronds, grass tufts and the lawn are m
 procedurally and rendered in Blender (Cycles) by `tools/blender/foliage.py`, then converted with
 `tools/blender/foliage_post.py` and cwebp. Bark is a tileable noise field from
 `tools/blender/bark.py`. No photographs or downloaded assets.
+
+## The land beyond the walls
+
+The horizon panorama (groves, villages, fields and sea) is modelled procedurally and rendered in
+Blender (Cycles) by `tools/blender/distant.py`, converted by `tools/blender/distant_post.py`.
+No photographs or map data.

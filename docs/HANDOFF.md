@@ -189,6 +189,13 @@ corrections). Site text overlays: `src/sites/konark/content.<lang>.json`. Needs 
    crown (`carvedPillar` in `kit/ratha.ts`), and the pieces that fell from the broken pillars lie
    about the platform, off the aisles. (Narasimha in the owner's list is the gaja-simha, done in
    round 1.) Review URLs take a ground height too: `view=x,y,z,lookX,lookY,lookZ`.
-   Next: distant views.
+   Round 5: the audience hall's dark bands fixed (the `recess` stone was near-black; now a
+   shadowed khondalite, the bake gives the depth); distant views: the land beyond the walls out
+   to 8 km (groves, casuarina, palms, villages, fields, the sea 3 km ESE) modelled and rendered in
+   Blender as a horizon band (`tools/blender/distant.py`, `distant_post.py` →
+   `public/sites/konark/horizon/`), hung on a ring that travels with the eye and hazed by the
+   walk's own fog at each pixel's true distance (`kit/Horizon.tsx`); the morning haze thinned so
+   tree lines show. Light re-baked for the carved pillars. Renders and bakes run at low priority
+   (`nice -n 20`): the owner's laptop heats up under them.
 6. Phone layout for everything.
 7. Other sites (Red Fort, Taj Mahal, Hampi, …) — currently names on the map only.
