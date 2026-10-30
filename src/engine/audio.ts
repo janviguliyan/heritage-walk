@@ -237,23 +237,24 @@ export function footstep(surface: FootSurface, running: boolean) {
     const n = Math.floor(c.sampleRate * len)
     const buf = c.createBuffer(1, n, c.sampleRate)
     const d = buf.getChannelData(0)
-    const grains = 45 + Math.floor(Math.random() * 30)
+    const grains = 30 + Math.floor(Math.random() * 20)
     for (let k = 0; k < grains; k++) {
       // when: crowded at the start of the step
       const at = Math.floor(Math.pow(Math.random(), 2.2) * (n - 400))
-      const dur = Math.floor(c.sampleRate * (0.0008 + Math.random() * 0.003))
-      const amp = (0.25 + Math.random() * 0.75) * (1 - at / n)
-      for (let i = 0; i < dur && at + i < n; i++) d[at + i] += (Math.random() * 2 - 1) * amp * Math.pow(1 - i / dur, 2)
+      const dur = Math.floor(c.sampleRate * (0.004 + Math.random() * 0.01))
+      const amp = (0.2 + Math.random() * 0.4) * (1 - at / n)
+      // each grain eases in and out (no hard click edges)
+      for (let i = 0; i < dur && at + i < n; i++) d[at + i] += (Math.random() * 2 - 1) * amp * Math.sin((Math.PI * i) / dur)
     }
     const src = c.createBufferSource()
     src.buffer = buf
     const hp = c.createBiquadFilter()
     hp.type = 'highpass'
-    hp.frequency.value = jitter(1300)
+    hp.frequency.value = jitter(500)
     hp.Q.value = 0.5
     const lp = c.createBiquadFilter()
     lp.type = 'lowpass'
-    lp.frequency.value = jitter(7000)
+    lp.frequency.value = jitter(2800)
     lp.Q.value = 0.5
     const g = c.createGain()
     g.gain.value = jitter(gain, 0.2)
@@ -263,8 +264,8 @@ export function footstep(surface: FootSurface, running: boolean) {
   switch (surface) {
     case 'grass':
       // the blades, and a soft heel on the earth beneath
-      blades(0.32)
-      burst(0.07, 0.1, 3, 0, 'lowpass', 220, 0.1)
+      blades(0.16)
+      burst(0.08, 0.15, 3, 0, 'lowpass', 200, 0.07)
       break
     case 'paving':
       // a dull heel on the flags, then the gritty scuff of the sole
