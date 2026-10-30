@@ -229,11 +229,42 @@ export function footstep(surface: FootSurface, running: boolean) {
     src.connect(f).connect(g).connect(out)
     src.start(now + delay)
   }
+  /** grass underfoot: no smooth hiss (a swelling puff of noise at walking pace sounded like a
+   *  steam engine), but a scatter of tiny separate snaps and rustles, most of them early as the
+   *  foot lands, thinning out as it settles */
+  const blades = (gain: number) => {
+    const len = 0.2
+    const n = Math.floor(c.sampleRate * len)
+    const buf = c.createBuffer(1, n, c.sampleRate)
+    const d = buf.getChannelData(0)
+    const grains = 45 + Math.floor(Math.random() * 30)
+    for (let k = 0; k < grains; k++) {
+      // when: crowded at the start of the step
+      const at = Math.floor(Math.pow(Math.random(), 2.2) * (n - 400))
+      const dur = Math.floor(c.sampleRate * (0.0008 + Math.random() * 0.003))
+      const amp = (0.25 + Math.random() * 0.75) * (1 - at / n)
+      for (let i = 0; i < dur && at + i < n; i++) d[at + i] += (Math.random() * 2 - 1) * amp * Math.pow(1 - i / dur, 2)
+    }
+    const src = c.createBufferSource()
+    src.buffer = buf
+    const hp = c.createBiquadFilter()
+    hp.type = 'highpass'
+    hp.frequency.value = jitter(1300)
+    hp.Q.value = 0.5
+    const lp = c.createBiquadFilter()
+    lp.type = 'lowpass'
+    lp.frequency.value = jitter(7000)
+    lp.Q.value = 0.5
+    const g = c.createGain()
+    g.gain.value = jitter(gain, 0.2)
+    src.connect(hp).connect(lp).connect(g).connect(out)
+    src.start(now)
+  }
   switch (surface) {
     case 'grass':
-      // a soft swish of blades and a muffled heel
-      burst(0.24, 0.18, 1.5, 0.006, 'bandpass', 2400, 0.22)
-      burst(0.1, 0.08, 2.5, 0, 'lowpass', 260, 0.12)
+      // the blades, and a soft heel on the earth beneath
+      blades(0.32)
+      burst(0.07, 0.1, 3, 0, 'lowpass', 220, 0.1)
       break
     case 'paving':
       // a dull heel on the flags, then the gritty scuff of the sole
